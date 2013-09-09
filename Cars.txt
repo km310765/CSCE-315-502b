@@ -1,7 +1,0 @@
-5 4
-Make Model Year Color
-Chevy Silverado1500 2011 Black
-Dodge Ram2500 2006 Navy
-Ford Mustang 2004 Blue
-Dodge Challenger 2009 Red
-Chevy Silverado2500 2003 Maroon
