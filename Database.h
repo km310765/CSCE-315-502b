@@ -7,10 +7,15 @@ using namespace std;
 class Database {
   public:
     typedef map<string,Relation> Table;
-    vector<Relation> relation;
-  Database(){};
+	vector<Relation> relation;
+	Relation Selection;
+	Relation Projection;
+	Database(){Selection.name = "Selection"; Projection.name = "Projection";};
+	//Database(){};
     Table table;
-    void Selection(Relation name, string attr_name);
+     void Select(string attr_name, string condition, string cell_condition, string rel_name);
+	 void Update(string rel_name, string attr_name, string literal, string condition_attr, string condition, string condition_literal);
+	void Project(vector<string> attr_name, string rel_name);
     void Create(string rel_name);
 	void Delete(string rel_name);
     void AddColumn(const string& rel_name, const Header& h);
