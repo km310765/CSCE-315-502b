@@ -53,6 +53,11 @@ class Relation{
 		for(int i = 0; i < attr.size(); i++)
 			attr[i].cell[n] = row[i];
 	}
+	void deleteRow(int n)
+	{
+		for(int i = 0; i < attr.size(); i++)
+			attr[i].cell.erase(attr[i].cell.begin() + n);
+	}
     vector<Cell> getRow(int n)
     {
       vector<Cell> tuple;
