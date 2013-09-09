@@ -112,7 +112,8 @@ int main(){
   cell.push_back("2.9");
   d.Insert("Table3", cell);
   
-  d.Product("Result", "Table1", "Table2");
-  d.Show("Result");
+  d.Show("Table3");
+  d.Update("Table3", "Str2", "6", "Str3", "==", "2.9");
+  d.Show("Table3");
   return 0;
 }
