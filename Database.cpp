@@ -1,7 +1,229 @@
 #include "Database.h"
 #include <algorithm> 
-void Database:: Selection(Relation name, string attr_name) {
+void Database:: Project(vector<string> attr_name, string rel_name){
+	for (int i = 0; i < relation.size(); ++i){
+		if (rel_name == relation[i].name){
+			Relation new_projection;
+			new_projection.name = "Projection";
+			for (int j = 0; j < attr_name.size(); ++j){
+				int attr_loc;
+				attr_loc = (relation[i].findAttribute(attr_name[j]));
+				if (attr_loc != -1){
+					new_projection.attr.push_back(relation[i].attr[attr_loc]);
+				}
+				else
+					cerr << "No attribute '" << attr_name[j] << "' was found in " << rel_name <<"." << endl;
+			}
+			if (new_projection.attr.size() == 0){
+				cerr << "None of the attributes requested were found to be projected from '" << rel_name << "'." <<endl;
+				return;
+			}
+			else 
+				Projection = new_projection;
+			return;
+		}
+	}	
+	cerr << "I did not find anything called "<< rel_name << endl;
+}
+void Database:: Select(string attr_name, string condition, string cell_condition, string rel_name) {
+	for (int i = 0; i < relation.size(); ++i){
+		if (rel_name == relation[i].name){
+			int attr_loc = relation[i].findAttribute(attr_name);
+			if (attr_loc != -1){
+				Relation new_selection = relation[i];
+				new_selection.clear_attr_cells();
+				new_selection.name = "Selection";
+				vector<string> getCells = relation[i].attr[attr_loc].getCells();
+				vector<int> condition_metLoc;
+				if(condition == ">"){
+					if(relation[i].attr[attr_loc].getType() == INT){
+						for (int j = 0; j < getCells.size(); ++j){
+							int getCell = atoi(getCells[j].c_str());//conversion from string to int
+							int cell_cond = atoi(cell_condition.c_str());
+							if (getCell > cell_cond){
+								condition_metLoc.push_back(j);
+								}
+						}
+					}
+					else
+						cerr << "The attribute '" << attr_name << "' in relation '" << rel_name << "' is not of int type." << endl;
+				}
+				else if(condition == "<"){
+					if(relation[i].attr[attr_loc].getType() == INT){
+						for (int j = 0; j < getCells.size(); ++j){
+							int getCell = atoi(getCells[j].c_str());//conversion from string to int
+							int cell_cond = atoi(cell_condition.c_str());
+							if (getCell < cell_cond){
+								condition_metLoc.push_back(j);
+								}
+						}
+					}
+					else
+						cerr << "The attribute '" << attr_name << "' in relation '" << rel_name << "' is not of int type." << endl;
+				}
+				else if(condition == "<="){
+					if(relation[i].attr[attr_loc].getType() == INT){
+						for (int j = 0; j < getCells.size(); ++j){
+							int getCell = atoi(getCells[j].c_str());//conversion from string to int
+							int cell_cond = atoi(cell_condition.c_str());
+							if (getCell <= cell_cond){
+								condition_metLoc.push_back(j);
+								}
+						}
+					}
+					else
+						cerr << "The attribute '" << attr_name << "' in relation '" << rel_name << "' is not of int type." << endl;
+				}
+				else if(condition == ">="){
+					if(relation[i].attr[attr_loc].getType() == INT){
+						for (int j = 0; j < getCells.size(); ++j){
+							int getCell = atoi(getCells[j].c_str());//conversion from string to int
+							int cell_cond = atoi(cell_condition.c_str());
+							if (getCell >= cell_cond){
+								condition_metLoc.push_back(j);
+								}
+						}
+					}
+					else
+						cerr << "The attribute '" << attr_name << "' in relation '" << rel_name << "' is not of int type." << endl;
+				}
+				else if(condition == "=="){
+					for (int j = 0; j < getCells.size(); ++j){
+						if (getCells[j] == cell_condition){
+							condition_metLoc.push_back(j);
+							}
+					}
+				}
+				else if(condition == "!="){
+					for (int j = 0; j < getCells.size(); ++j){
+						if (getCells[j] != cell_condition){
+							condition_metLoc.push_back(j);
+							}
+					}
+				}
+				else 
+					cerr << "Not a valid condition, use '>', '<', or '=='." << endl;
+				if(condition_metLoc.size() == 0){
+						cerr << "No cells were found to meet that condition in attribute '" << attr_name << "' of relation '" << rel_name << "'." <<endl;
+						return;
+					}
+				else{
+					for (int j = 0; j < condition_metLoc.size(); ++j){
+						new_selection.Insert(relation[i].getRow(condition_metLoc[j]));
+						Selection = new_selection;
+					}
+				}
+				return;
+			}
+			else cerr << "No attribute '" << attr_name << "' was found in " << rel_name <<"." << endl;
+			return;
+		}
+	}
+	cerr << "I did not find anything called "<< rel_name << endl;
+}
 
+void Database::Update(string rel_name, string attr_name, string literal, string condition_attr, string condition, string condition_literal) {
+	Relation* r;
+	for(int i = 0; i < relation.size(); i++)
+	{
+		if(rel_name == relation[i].name)
+		{
+			r = &relation[i];
+			break;
+		}
+	}
+	int attr_loc = r->findAttribute(condition_attr);
+	if(attr_loc == -1)
+	{
+		cerr << "Could not find attribute: " << condition_attr << endl;
+		return;
+	}
+	Relation selection = *r;
+	selection.clear_attr_cells();
+	selection.name = "Selection";
+	vector<string> cells = r->attr[attr_loc].getCells();
+	vector<int> condition_metLoc;
+	if(condition == ">"){
+		if(r->attr[attr_loc].getType() == INT){
+			for (int j = 0; j < cells.size(); ++j){
+				int getCell = atoi(cells[j].c_str());//conversion from string to int
+				int cell_cond = atoi(condition_literal.c_str());
+				if (getCell > cell_cond){
+					condition_metLoc.push_back(j);
+					}
+			}
+		}
+		else
+			cerr << "The attribute '" << condition_attr << "' in relation '" << rel_name << "' is not of int type." << endl;
+	}
+	else if(condition == "<"){
+		if(r->attr[attr_loc].getType() == INT){
+			for (int j = 0; j < cells.size(); ++j){
+				int getCell = atoi(cells[j].c_str());//conversion from string to int
+				int cell_cond = atoi(condition_literal.c_str());
+				if (getCell < cell_cond){
+					condition_metLoc.push_back(j);
+					}
+			}
+		}
+		else
+			cerr << "The attribute '" << condition_attr << "' in relation '" << rel_name << "' is not of int type." << endl;
+	}
+	else if(condition == "<="){
+		if(r->attr[attr_loc].getType() == INT){
+			for (int j = 0; j < cells.size(); ++j){
+				int getCell = atoi(cells[j].c_str());//conversion from string to int
+				int cell_cond = atoi(condition_literal.c_str());
+				if (getCell <= cell_cond){
+					condition_metLoc.push_back(j);
+					}
+			}
+		}
+		else
+			cerr << "The attribute '" << condition_attr << "' in relation '" << rel_name << "' is not of int type." << endl;
+	}
+	else if(condition == ">="){
+		if(r->attr[attr_loc].getType() == INT){
+			for (int j = 0; j < cells.size(); ++j){
+				int getCell = atoi(cells[j].c_str());//conversion from string to int
+				int cell_cond = atoi(condition_literal.c_str());
+				if (getCell >= cell_cond){
+					condition_metLoc.push_back(j);
+					}
+			}
+		}
+		else
+			cerr << "The attribute '" << condition_attr << "' in relation '" << rel_name << "' is not of int type." << endl;
+	}
+	else if(condition == "=="){
+		for (int j = 0; j < cells.size(); ++j){
+			if (cells[j] == condition_literal){
+				condition_metLoc.push_back(j);
+				}
+		}
+	}
+	else if(condition == "!="){
+		for (int j = 0; j < cells.size(); ++j){
+			if (cells[j] != condition_literal){
+				condition_metLoc.push_back(j);
+				}
+		}
+	}
+	else 
+		cerr << "Not a valid condition, use '>', '<', or '=='." << endl;
+	if(condition_metLoc.size() == 0){
+			cerr << "No cells were found to meet that condition in attribute '" << condition_attr << "' of relation '" << rel_name << "'." <<endl;
+			return;
+		}
+	else{
+		for (int j = 0; j < condition_metLoc.size(); ++j){
+			vector<Cell> row = r->getRow(condition_metLoc[j]);
+			int attr_loc = r->findAttribute(attr_name);
+			row[attr_loc] = literal;
+			r->setRow(condition_metLoc[j], row);
+		}
+	}
+	
 }
 
 void Database::Delete_attr(const string& rel_name,const string& attribute) {
@@ -13,6 +235,7 @@ void Database::Delete_attr(const string& rel_name,const string& attribute) {
   }
   cerr << "I did not find anything called "<< rel_name << endl;
 }
+ 
  
 
 void Database:: Rename(string rel_name,string new_name, string old_name) {
