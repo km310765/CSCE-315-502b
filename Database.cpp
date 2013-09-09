@@ -226,6 +226,107 @@ void Database::Update(string rel_name, string attr_name, string literal, string 
 	
 }
 
+void Database::Delete(string rel_name, string condition_attr, string condition, string condition_literal) {
+	Relation* r;
+	for(int i = 0; i < relation.size(); i++)
+	{
+		if(rel_name == relation[i].name)
+		{
+			r = &relation[i];
+			break;
+		}
+	}
+	int attr_loc = r->findAttribute(condition_attr);
+	if(attr_loc == -1)
+	{
+		cerr << "Could not find attribute: " << condition_attr << endl;
+		return;
+	}
+	Relation selection = *r;
+	selection.clear_attr_cells();
+	selection.name = "Selection";
+	vector<string> cells = r->attr[attr_loc].getCells();
+	vector<int> condition_metLoc;
+	if(condition == ">"){
+		if(r->attr[attr_loc].getType() == INT){
+			for (int j = 0; j < cells.size(); ++j){
+				int getCell = atoi(cells[j].c_str());//conversion from string to int
+				int cell_cond = atoi(condition_literal.c_str());
+				if (getCell > cell_cond){
+					condition_metLoc.push_back(j);
+					}
+			}
+		}
+		else
+			cerr << "The attribute '" << condition_attr << "' in relation '" << rel_name << "' is not of int type." << endl;
+	}
+	else if(condition == "<"){
+		if(r->attr[attr_loc].getType() == INT){
+			for (int j = 0; j < cells.size(); ++j){
+				int getCell = atoi(cells[j].c_str());//conversion from string to int
+				int cell_cond = atoi(condition_literal.c_str());
+				if (getCell < cell_cond){
+					condition_metLoc.push_back(j);
+					}
+			}
+		}
+		else
+			cerr << "The attribute '" << condition_attr << "' in relation '" << rel_name << "' is not of int type." << endl;
+	}
+	else if(condition == "<="){
+		if(r->attr[attr_loc].getType() == INT){
+			for (int j = 0; j < cells.size(); ++j){
+				int getCell = atoi(cells[j].c_str());//conversion from string to int
+				int cell_cond = atoi(condition_literal.c_str());
+				if (getCell <= cell_cond){
+					condition_metLoc.push_back(j);
+					}
+			}
+		}
+		else
+			cerr << "The attribute '" << condition_attr << "' in relation '" << rel_name << "' is not of int type." << endl;
+	}
+	else if(condition == ">="){
+		if(r->attr[attr_loc].getType() == INT){
+			for (int j = 0; j < cells.size(); ++j){
+				int getCell = atoi(cells[j].c_str());//conversion from string to int
+				int cell_cond = atoi(condition_literal.c_str());
+				if (getCell >= cell_cond){
+					condition_metLoc.push_back(j);
+					}
+			}
+		}
+		else
+			cerr << "The attribute '" << condition_attr << "' in relation '" << rel_name << "' is not of int type." << endl;
+	}
+	else if(condition == "=="){
+		for (int j = 0; j < cells.size(); ++j){
+			if (cells[j] == condition_literal){
+				condition_metLoc.push_back(j);
+				}
+		}
+	}
+	else if(condition == "!="){
+		for (int j = 0; j < cells.size(); ++j){
+			if (cells[j] != condition_literal){
+				condition_metLoc.push_back(j);
+				}
+		}
+	}
+	else 
+		cerr << "Not a valid condition, use '>', '<', or '=='." << endl;
+	if(condition_metLoc.size() == 0){
+			cerr << "No cells were found to meet that condition in attribute '" << condition_attr << "' of relation '" << rel_name << "'." <<endl;
+			return;
+		}
+	else{
+		for (int j = 0; j < condition_metLoc.size(); ++j){
+			r->deleteRow(j);
+		}
+	}
+	
+}
+
 void Database::Delete_attr(const string& rel_name,const string& attribute) {
  for (int i = 0; i < relation.size(); ++i){
     if (rel_name == relation[i].name){
@@ -300,8 +401,15 @@ Relation& Database::operator[](const string& s){
   return table[s]; 
 }
 
-void Database::Union(const string& rel_name1,const string& rel_name2) {
-  int i1,i2;
+void Database::Union(const string& rel_name1, const string& rel_name2,const string& rel_name3) {
+  int i1,i2,i3;
+  for(int i = 0; i < relation.size(); i++)
+  {
+	if(rel_name1 == relation[i].name) {
+		relation.erase(relation.begin() + i);
+	}
+  }
+  Create(rel_name1);
   for (int i = 0; i < relation.size(); ++i){
     if (rel_name1 == relation[i].name){
       i1 =i;
@@ -310,26 +418,56 @@ void Database::Union(const string& rel_name1,const string& rel_name2) {
   }
   for (int i = 0; i < relation.size(); ++i){
     if (rel_name2 == relation[i].name){
-      i2 = i;
+      i2 =i;
       break;
     }
   }
-  //Create(rel_name1+rel_name2+"Union");
-  bool insrt = true;
-  
-  int i1Rowsize = relation[i1].getRowSize();
-  int jrowsize = relation[i2].getRowSize();
-  for(int j=0; j < jrowsize; j++) {
-    for(int i=0; i < relation[i1].getRowSize(); i++) {
-      if(relation[i2].getRow(j) == relation[i1].getRow(i)) {
-        break;
-      }
-      if(i==relation[i1].getRowSize()-1){
-        Insert(relation[i1].name,relation[i2].getRow(j));
-        break;
-      }
+  for (int i = 0; i < relation.size(); ++i){
+    if (rel_name3 == relation[i].name){
+      i3 = i;
+      break;
     }
-  } 
+  }
+  if(relation[i2].getNumAttributes() != relation[i3].getNumAttributes())
+  {
+	cerr << "Size does not match " << endl;
+	return;
+	}
+  for(int i=0; i<relation[i2].getNumAttributes();i++){
+    if(relation[i2].getAttributeType(i) != relation[i3].getAttributeType(i)) {
+      cerr << "Attributes do not have the same type, cannot insert " << endl;
+      return;
+    }
+  }
+  
+  for(int i = 0; i < relation[i2].getNumAttributes(); i++)
+  {
+	Attribute a = relation[i2].getAttribute(i);
+	relation[i1].add_attr(a.getName(), a.type);
+  }
+  
+  for(int i = 0; i < relation[i2].getRowSize(); i++)
+  {
+	Insert(relation[i1].name, relation[i2].getRow(i));
+	}
+
+
+    //Create(rel_name2+rel_name3+"Union");
+    bool insrt = true;
+
+    int i2Rowsize = relation[i2].getRowSize();
+    int jrowsize = relation[i3].getRowSize();
+    for(int j=0; j < jrowsize; j++) {
+		bool found = false;
+      for(int i=0; i < relation[i2].getRowSize(); i++) {
+        if(relation[i3].getRow(j) == relation[i2].getRow(i)) {
+		found = true;
+          break;
+        }
+      }
+	  if(!found)
+		Insert(relation[i1].name,relation[i3].getRow(j));
+    }
 }
 
 void Database::Difference(const string& rel_name1, const string& rel_name2, const string& rel_name3) {
@@ -357,6 +495,18 @@ void Database::Difference(const string& rel_name1, const string& rel_name2, cons
     if (rel_name3 == relation[i].name){
       i3 = i;
       break;
+    }
+  }
+  
+  if(relation[i2].getNumAttributes() != relation[i3].getNumAttributes())
+  {
+	cerr << "Size does not match " << endl;
+	return;
+	}
+  for(int i=0; i<relation[i2].getNumAttributes();i++){
+    if(relation[i2].getAttributeType(i) != relation[i3].getAttributeType(i)) {
+      cerr << "Attributes do not have the same type, cannot insert " << endl;
+      return;
     }
   }
   
