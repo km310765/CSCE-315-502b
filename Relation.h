@@ -34,10 +34,25 @@ class Relation{
     {
       return (*this)[n];
     }
+	int findAttribute(string attr_name){
+		for(int i = 0; i < attr.size(); i++){
+			if(attr_name == attr[i].getName())
+				return i;
+		}
+		return -1;
+	}
     int getNumAttributes()
     {
       return attr.size();
     }
+	Type getAttributeType(int n) {
+      return attr[n].type;
+    }
+	void setRow(int n, vector<Cell> row)
+	{
+		for(int i = 0; i < attr.size(); i++)
+			attr[i].cell[n] = row[i];
+	}
     vector<Cell> getRow(int n)
     {
       vector<Cell> tuple;
@@ -53,29 +68,45 @@ class Relation{
     }
 
     void read(string s);
-	void dis_table();
 
     void Create(string rel_name){
       name = rel_name;
     }
 
     void Show() {
-      vector<Cell> tuple;
-      cout << "\n\n          ------------------------------------" << endl;
-      cout << "                     DATABASE TABLE           " << endl;
-      cout << "          ------------------------------------" << endl;
-      for(int i = 0; i< attr.size(); i++) {
-        cout << setw(15) << getAttribute(i).getName() << setw(15);
-      }
-      cout << endl;
-      cout <<"          ------------------------------------" << endl;
-
-      for(int r=0; r < attr[0].getLength(); ++r) {
-        for(int c = 0; c< attr.size(); c++){
-          cout << setw(15) << (*this)[c][r];
-        }
-        cout << endl;
-      }
+	if(attr.size() !=0){
+		  vector<Cell> tuple;
+		  cout << endl;
+		  cout << "     ";
+		  for(int i = 0; i< attr.size(); i++) {
+			cout << "---------------";
+			}
+			cout << endl;
+		  cout << "     " << name << " TABLE" << endl;
+		  cout << "     ";
+			for(int i = 0; i< attr.size(); i++) {
+				cout << "---------------";
+			}
+			cout << endl;
+		  for(int i = 0; i< attr.size(); i++) {
+			cout << setw(15) << getAttribute(i).getName();
+		  }
+		  cout << endl;
+		  cout << "     ";
+			for(int i = 0; i< attr.size(); i++) {
+				cout << "---------------";
+			}
+			cout << endl;
+		  for(int r=0; r < attr[0].getLength(); ++r) {
+			for(int c = 0; c< attr.size(); c++){
+			  cout << setw(15) << (*this)[c][r];
+			}
+			cout << endl;
+		  }
+		  cout << endl;
+	  }
+	  else 
+		cerr << "Relation '" << name << "' has no members." << endl;
     }
 
     void Rename(string new_name, string old_name) {
@@ -86,15 +117,19 @@ class Relation{
       }
     }
 
-    void Insert(const vector<Cell>& row) { 
+    void Insert(vector<Cell> row) { 
       for(int c = 0; c< attr.size(); c++)
-        (*this)[c].push_back(row[c]);
+        attr[c].push_back(row[c]);
     }
 
     void Write() {
       cout << "Requires File I/O, will be implemented in the next part " << endl;
     }
-
+	void clear_attr_cells(){
+		for (int i = 0; i < attr.size(); ++i){
+			attr[i].cell.clear();
+		}
+	}
     void Delete_attr(const string& attribute) {
       for(int i =0; i < attr.size(); i++) {
         for(int j = 0; j < attr[0].getLength(); j++) {
