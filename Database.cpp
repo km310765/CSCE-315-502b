@@ -1,10 +1,12 @@
 #include "Database.h"
 #include <algorithm> 
+
+// Compute the projection of two relations
 void Database:: Project(vector<string> attr_name, string rel_name){
 	for (int i = 0; i < relation.size(); ++i){
 		if (rel_name == relation[i].name){
-			Relation new_projection;
-			new_projection.name = "Projection";
+			Relation new_projection;    // create a new relation
+			new_projection.name = "Projection";    // rename the relation 
 			for (int j = 0; j < attr_name.size(); ++j){
 				int attr_loc;
 				attr_loc = (relation[i].findAttribute(attr_name[j]));
@@ -25,6 +27,8 @@ void Database:: Project(vector<string> attr_name, string rel_name){
 	}	
 	cerr << "I did not find anything called "<< rel_name << endl;
 }
+
+// function used to select a tuple that satisfies a particular condition in a relation
 void Database:: Select(string attr_name, string condition, string cell_condition, string rel_name) {
 	for (int i = 0; i < relation.size(); ++i){
 		if (rel_name == relation[i].name){
@@ -35,6 +39,8 @@ void Database:: Select(string attr_name, string condition, string cell_condition
 				new_selection.name = "Selection";
 				vector<string> getCells = relation[i].attr[attr_loc].getCells();
 				vector<int> condition_metLoc;
+				
+				// Different conditions to be tested. The operations are >,<,==,>= , !=,<=
 				if(condition == ">"){
 					if(relation[i].attr[attr_loc].getType() == INT){
 						for (int j = 0; j < getCells.size(); ++j){
@@ -122,6 +128,9 @@ void Database:: Select(string attr_name, string condition, string cell_condition
 	cerr << "I did not find anything called "<< rel_name << endl;
 }
 
+
+// Update function is used to update a certain cell that satisfies a particular condition. 
+
 void Database::Update(string rel_name, string attr_name, string literal, string condition_attr, string condition, string condition_literal) {
 	Relation* r;
 	for(int i = 0; i < relation.size(); i++)
@@ -132,7 +141,7 @@ void Database::Update(string rel_name, string attr_name, string literal, string 
 			break;
 		}
 	}
-	int attr_loc = r->findAttribute(condition_attr);
+	int attr_loc = r->findAttribute(condition_attr);    // Find the location of the attribute to be changed
 	if(attr_loc == -1)
 	{
 		cerr << "Could not find attribute: " << condition_attr << endl;
@@ -143,6 +152,8 @@ void Database::Update(string rel_name, string attr_name, string literal, string 
 	selection.name = "Selection";
 	vector<string> cells = r->attr[attr_loc].getCells();
 	vector<int> condition_metLoc;
+
+  // look for different conditions 
 	if(condition == ">"){
 		if(r->attr[attr_loc].getType() == INT){
 			for (int j = 0; j < cells.size(); ++j){
@@ -226,6 +237,7 @@ void Database::Update(string rel_name, string attr_name, string literal, string 
 	
 }
 
+// Delete function is used to delete a certain tuple. it works pretty much like the update function.
 void Database::Delete(string rel_name, string condition_attr, string condition, string condition_literal) {
 	Relation* r;
 	for(int i = 0; i < relation.size(); i++)
@@ -327,6 +339,8 @@ void Database::Delete(string rel_name, string condition_attr, string condition, 
 	
 }
 
+
+// this function will be used to delete a particular attribute from the table
 void Database::Delete_attr(const string& rel_name,const string& attribute) {
  for (int i = 0; i < relation.size(); ++i){
     if (rel_name == relation[i].name){
@@ -338,7 +352,7 @@ void Database::Delete_attr(const string& rel_name,const string& attribute) {
 }
  
  
-
+// This function is used to change the name of a column
 void Database:: Rename(string rel_name,string new_name, string old_name) {
   for (int i = 0; i < relation.size(); ++i){
     if (rel_name == relation[i].name){
@@ -348,7 +362,8 @@ void Database:: Rename(string rel_name,string new_name, string old_name) {
   }
   cerr << "I did not find anything called "<< rel_name << endl;
 }
-
+// This function is going to add columns in our table when we initially create a table. 
+// This allows us to have tables with different sizes. 
 void Database::AddColumn(const string& rel_name, const Header& h){
   for (int i = 0; i < relation.size(); ++i){
     if (rel_name == relation[i].name){
@@ -359,6 +374,7 @@ void Database::AddColumn(const string& rel_name, const Header& h){
   cerr << "I did not find anything called "<< rel_name << endl;
 }
 
+// This function takes in a vector of cells which is our tuple and inserts it in the table
 void Database:: Insert(string rel_name, const vector<Cell>& row) {
   for (int i = 0; i < relation.size(); ++i){
     if (rel_name == relation[i].name){
@@ -369,10 +385,13 @@ void Database:: Insert(string rel_name, const vector<Cell>& row) {
   cerr << "I did not find anything called "<< rel_name << endl;
 }
 
+// Call the rlation constructor
 void Database:: Create(string rel_name) {
   relation.push_back(Relation(rel_name));
 }
 
+
+//Delete a relation from the database
 void Database:: Delete(string rel_name) {
   for(int i = 0; i < relation.size(); i++)
   {
@@ -388,6 +407,7 @@ void Database:: Write(const string& rel_name) {
   cout << "Requires file I/O, will be done in the next part " << endl;
 }
 
+
 void Database:: Show(string rel_name) {
   for (int i = 0; i < relation.size(); ++i){
     if (rel_name == relation[i].name){
@@ -401,8 +421,12 @@ Relation& Database::operator[](const string& s){
   return table[s]; 
 }
 
+
+// Computes the union of two relations and stores it in a new relation
 void Database::Union(const string& rel_name1, const string& rel_name2,const string& rel_name3) {
   int i1,i2,i3;
+
+  // Find if the relations exist in the database and store their index
   for(int i = 0; i < relation.size(); i++)
   {
 	if(rel_name1 == relation[i].name) {
@@ -428,11 +452,15 @@ void Database::Union(const string& rel_name1, const string& rel_name2,const stri
       break;
     }
   }
+
+  // Check if the number of columns in the two table is the same
   if(relation[i2].getNumAttributes() != relation[i3].getNumAttributes())
   {
 	cerr << "Size does not match " << endl;
 	return;
 	}
+
+  // Check if the attributes have the same type
   for(int i=0; i<relation[i2].getNumAttributes();i++){
     if(relation[i2].getAttributeType(i) != relation[i3].getAttributeType(i)) {
       cerr << "Attributes do not have the same type, cannot insert " << endl;
@@ -470,8 +498,12 @@ void Database::Union(const string& rel_name1, const string& rel_name2,const stri
     }
 }
 
+// Compute the difference of the relations
+
 void Database::Difference(const string& rel_name1, const string& rel_name2, const string& rel_name3) {
   int i1,i2,i3;
+
+  // check to see the relations exist in the database.
   for(int i = 0; i < relation.size(); i++)
   {
 	if(rel_name1 == relation[i].name) {
@@ -498,6 +530,7 @@ void Database::Difference(const string& rel_name1, const string& rel_name2, cons
     }
   }
   
+  // Check if the attributes have same type and same length
   if(relation[i2].getNumAttributes() != relation[i3].getNumAttributes())
   {
 	cerr << "Size does not match " << endl;
@@ -537,8 +570,11 @@ void Database::Difference(const string& rel_name1, const string& rel_name2, cons
   }
 }
 
+// Compute the cross product of two relations
 void Database::Product(const string& rel_name1, const string& rel_name2, const string& rel_name3) {
   int i1,i2,i3;
+
+  //find the relations in the database
   for(int i = 0; i < relation.size(); i++)
   {
 	if(rel_name1 == relation[i].name) {
