@@ -8,12 +8,9 @@ class Token
 {
 public:
 	char kind; // what kind of token
-	string str;
 	int value;
-	Token(char ch) : kind(ch), str(""), value(0) {}
-	Token(char ch, string str) : kind(ch), str(str), value(0) {}
-	Token(char ch, int val) : kind(ch), str(""), value(val) {}
-	Token(char ch, string str, int val) : kind(ch), str(str), value(val) {}
+	Token(char ch) : kind(ch), value(0) {}
+	Token(char ch, int val) : kind(ch), value(val) {}
 };
 
 class Token_stream
@@ -29,12 +26,12 @@ public:
 };
 
 /*
-	Type					Kind
-	integer	literal			8	
+	Type					Kind	
 	string literal			"
-	string					a
+	alpha					a
+	digit					0
 	assignment				:
-	comparison				=
+	op						=
 	conjunction				&
 	condition				|
 	,						commas are emmitted
@@ -71,10 +68,7 @@ Token Token_stream::get()
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
 			{
-				ss.putback(ch);         // put digit back into the input stream
-				int val;
-				ss >> val;              // read an integer
-				return Token('8',val);   // let '8' represent "a number"
+				return Token('0', ch);   // let '0' represent "digit"
 			}
 			break;
 		case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'g': case 'h': case 'i': case 'j':
@@ -85,25 +79,7 @@ Token Token_stream::get()
 		case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
 		case '_':
 			{
-				ss.putback(ch);         // put char back into the input stream
-				string val;
-				string str;
-				ss >> str;
-				string acceptable = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_1234567890";
-				char c;
-				while(true)
-				{
-					c = str[0];
-					if(acceptable.find(c) == string::npos)
-					{
-						for(int i = str.length() - 1; i >= 0; i--)
-							ss.putback(str[i]);
-						break;
-					}
-					str = str.substr(1, str.length() - 1);
-					val += c;
-				} // read a string
-				return Token('a', val);   // let 'a' represent "a string"
+				return Token('a', ch);   // let 'a' represent "char"
 			}
 			break;
 		case '>': case '!': case '=':
@@ -111,7 +87,9 @@ Token Token_stream::get()
 				ss.putback(ch);         // put char back into the input stream
 				string val;
 				ss >> val;              // read a string
-				return Token('=', val); // let '=' represent "comparison"
+				if(val == "<")
+					return Token('=', 'l');
+				return Token('=', ch); // let '=' represent "comparison"
 			}
 			break;
 		case '<':
@@ -121,8 +99,10 @@ Token Token_stream::get()
 				ss >> val;              // read a string
 				if(val == "<-")
 					return Token(':');   // let ':' represent "assignment"
-				else if(val == "<=" || val == "<")
-					return Token('=', val); // let '=' represent "comparison"
+				else if(val == "<")
+					return Token('=', 'g');
+				else if(val == "<=")
+					return Token('=', ch); // let '=' represent "op"
 			}
 			break;
 		case '&': case '|':
@@ -138,17 +118,7 @@ Token Token_stream::get()
 			break;
 		case '"':
 			{
-				ss.putback(ch);         // put char back into the input stream
-				string val;
-				ss >> val;              // read a string
-				if(val.find('"', 1) != string::npos)
-				{
-					for(int i = val.length() - 1; i >= val.find('"', 1) + 1; i--)
-						ss.putback(val[i]);
-					return Token('"', val.substr(1, val.find('"', 1) - 1));   // let '"' represent "a literal"
-				}
-				else
-					cerr << "Bad token" << endl;
+				return Token('"');
 			}
 			break;
 		default:
