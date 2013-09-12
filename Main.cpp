@@ -6,6 +6,64 @@
 
 using namespace std;
 
+Token_stream ts;
+
+bool identifier(Token_stream& ts)
+{
+	string identifier_name = "";
+	Token t = ts.get();
+	if(t.kind != 'a')
+	{
+		ts.putback(t);
+		return false;
+	}
+	identifier_name += t.value;
+	t = ts.get();
+	while(t.kind == 'a' || t.kind == '0')
+	{
+		identifier_name += t.value;
+		t = ts.get();
+	}
+	ts.putback(t);
+	cout << identifier_name << endl;
+	return true;
+}
+
+bool relation_name(Token_stream& ts)
+{
+	return identifier(ts);
+}
+
+bool expr(Token_stream& ts)
+{
+	return true;
+}
+
+bool query(Token_stream& ts)
+{
+	if(!relation_name(ts))
+		return false;
+	Token next = ts.get();
+	if(next.kind != ':')
+	{
+		ts.putback(next);
+		return false;
+	}
+	if(!expr(ts))
+		return false;
+	return true;
+}
+
+bool command(Token_stream& ts)
+{
+	return false;
+}
+
+bool valid_line(Token_stream& ts)
+{
+	return query(ts) || command(ts);
+}
+
 int main(){
   /*d.Create("Table1");
   d.AddColumn("Table1", Header("Str1", STRING));
@@ -77,12 +135,16 @@ int main(){
   string line;
   getline(cin, line);
   ts.ss << line;
+  bool valid = true;
   while(true)
   {
 	Token t = ts.get();
-	cout << t.kind << ", " << t.str << ", " << t.value << endl;
+	//cout << t.kind << ", " << t.value << endl;
 	if(t.kind == ';')
-		break;
+		//break;
+		return 0;
+	ts.putback(t);
+	cout << valid_line(ts) << endl;
   }
   return 0;
 }
