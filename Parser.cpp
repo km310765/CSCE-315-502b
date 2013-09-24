@@ -7,25 +7,38 @@
 #include <stdlib.h>
 
 using namespace std;
+//Relation storage
 string rel_name;
 vector<string> rel_names;
-vector<Type> attr_type;
+
+//Operations storage
 vector<string> operators;
+vector<string> operands;
+
+//Attribute storage
 vector<string> attr_value;
+vector<string> attr_list;
+vector<Type> attr_type;
+
+//Literals
+vector<Cell> lit_list;
+
+vector<Token> conditions;
+
 Database d;
 
 Token_stream ts;
-bool identifier(Token_stream& ts)
+bool identifier(Token_stream& ts, string kind)
 {
   Token t = ts.get();
-  if(t.kind == '8') {
+  /*if(t.kind == '8') {
 		stringstream ss;
 		ss << t.value;
 		attr_value.push_back(ss.str());
 	}
 	else if(t.kind == 'a') {
 		attr_value.push_back(t.str);
-	}
+	}*/
   if(t.kind != 'a')
   {
     ts.putback(t);
@@ -37,14 +50,21 @@ bool identifier(Token_stream& ts)
     ts.putback(t);
     return false;
   }
-  rel_name = t.str;
-  rel_names.push_back(t.str);
- 
+	if(kind == "rel"){
+		rel_name = t.str;
+		rel_names.push_back(t.str);
+	}
+	if(kind == "attr"){
+		attr_value.push_back(t.str);
+	}
+	if(kind == "list"){
+		attr_list.push_back(t.str);
+	}
   //cout << rel_names[0] << endl;
   return true;
 }
 bool relation_name(Token_stream& ts){
-  return identifier(ts);
+  return identifier(ts, "rel");
 }
 bool name_check(Token_stream& ts, string input){
   Token t = ts.get();
@@ -143,18 +163,28 @@ bool union_diff_proj(Token_stream& ts){
 	}
 }
 
-bool attribute_name(Token_stream& ts)
+bool attribute_name(Token_stream& ts, string kind)
 {
-  return identifier(ts);
+	if(kind == "attr")
+		return identifier(ts, kind);
+	if(kind == "list")
+		return identifier(ts, kind);
 }
 
 bool operand(Token_stream& ts)
 {
-  if(attribute_name(ts))
+  if(attribute_name(ts, "attr"))
     return true;
   Token t = ts.get();
-  if(t.kind == '8' || t.kind == '"') {
+  if(t.kind == '8') {
+	stringstream ss;
+	ss << t.value;
+	operands.push_back(ss.str());
     return true;
+	}
+if(t.kind == '"'){
+	operands.push_back(t.str);
+	return true;
 }
   ts.putback(t);
   return false;
@@ -163,8 +193,12 @@ bool operand(Token_stream& ts)
 bool op(Token_stream& ts)
 {
   Token t = ts.get();
-  operators.push_back(t.str);
-  return t.kind == '=';
+  if(t.kind == '=')
+  {
+	  operators.push_back(t.str);
+	  return true;
+  }
+  return false;
 }
 
 bool comparison(Token_stream& ts)
@@ -179,6 +213,7 @@ bool conjunction(Token_stream& ts)
     return false;
   Token t = ts.get();
   if(t.kind == '&') {
+  conditions.push_back(t);
     return valid && comparison(ts);
 	}
   ts.putback(t);
@@ -187,11 +222,13 @@ bool conjunction(Token_stream& ts)
 
 bool condition(Token_stream& ts)
 {
+	conditions.clear();
   bool valid = conjunction(ts);
   if(!valid)
     return false;
   Token t = ts.get();
   if(t.kind == '|') {
+	conditions.push_back(t);
     return valid && conjunction(ts);
 	}
   ts.putback(t);
@@ -200,26 +237,69 @@ bool condition(Token_stream& ts)
 
 bool selection(Token_stream& ts)
 {
-  return name_check(ts, "select") && ts.get().kind == '(' && condition(ts) && ts.get().kind == ')' && atomic_expr(ts);
+	bool ret = name_check(ts, "select") && ts.get().kind == '(' && condition(ts) && ts.get().kind == ')' && atomic_expr(ts);
+	if(ret){//(string attr_name, string condition, string cell_condition, string rel_name)
+		d.Select( attr_value.back(), operators.back(), operands.back(), rel_names.back());
+		attr_value.pop_back();
+		operators.pop_back();
+		operands.pop_back();
+		rel_names.pop_back();
+		rel_names.push_back("Expression");
+		while(!conditions.empty())
+		{
+			d.Copy_table("Expression", "AtomicRight");
+			d.Select( attr_value.back(), operators.back(), operands.back(), rel_names.back());
+			attr_value.pop_back();
+			operators.pop_back();
+			operands.pop_back();
+			rel_names.pop_back();
+			rel_names.push_back("Expression");
+			if(conditions.back().kind == '|')
+			{
+				d.Copy_table("Expression", "AtomicLeft");
+				d.Union("Expression", "AtomicLeft", "AtomicRight");
+			}
+			else if(conditions.back().kind == '&')
+			{
+				d.Copy_table("Expression", "AtomicLeft");
+				d.Intersection("Expression", "AtomicLeft", "AtomicRight");
+			}
+			conditions.pop_back();
+		}
+	}
+  return ret;
 }
 
 bool attribute_list(Token_stream& ts)
 {
-  if(!attribute_name(ts))
+  if(!attribute_name(ts, "list"))
     return false;
-  while(attribute_name(ts)) {}
+  while(attribute_name(ts, "list")) {}
   return true;
 }
 
 bool projection(Token_stream& ts)
 {
-  return name_check(ts, "project") && ts.get().kind == '(' && attribute_list(ts) && ts.get().kind == ')' && atomic_expr(ts);
+  bool ret = name_check(ts, "project") && ts.get().kind == '(' && attribute_list(ts) && ts.get().kind == ')' && atomic_expr(ts);
+  if(ret){//Project(vector<string> attr_name, string rel_name);
+	d.Project(attr_list, rel_names.back());
+	attr_list.clear();
+	rel_names.pop_back();
+	rel_names.push_back("Expression");
+  }
+  return ret;
 }
 
 bool rename(Token_stream& ts)
 {
-  return name_check(ts, "rename") && ts.get().kind == '(' && attribute_list(ts) && ts.get().kind == ')' && atomic_expr(ts);
-  return name_check(ts, "rename") && ts.get().kind == '(' && attribute_list(ts) && ts.get().kind == ')' && atomic_expr(ts);
+	bool ret = name_check(ts, "rename") && ts.get().kind == '(' && attribute_list(ts) && ts.get().kind == ')' && atomic_expr(ts);
+	if(ret)
+	{
+		d.Rename("Expression", rel_names.back(), attr_list);
+		rel_names.pop_back();
+		rel_names.push_back("Expression");
+	}
+  return ret;
 }
 
 bool expr(Token_stream& ts){
@@ -272,21 +352,31 @@ bool literal_list(Token_stream& ts){
     ts.putback(t);
     return false;
   }
-  vector<Token> list;
+  //vector<Token> list;
   Token literal = ts.get();
   bool valid = false;
   while(literal.kind == '"' || literal.kind == '8')
   {
-    list.push_back(literal);
+    //list.push_back(literal);
+	if(literal.kind == '"')
+		lit_list.push_back(literal.str);
+	if(literal.kind == '8'){
+		stringstream ss;
+		ss << literal.value;
+		lit_list.push_back(ss.str());
+	}
     literal = ts.get();
     valid = true;
   }
   ts.putback(literal);
-  if(!valid)
-    return false;
+  if(!valid){
+	lit_list.clear();
+	return false;
+	}
   t = ts.get();
   if(t.kind != ')')
   {
+	lit_list.clear();
     ts.putback(t);
     return false;
   }
@@ -296,8 +386,16 @@ bool literal_list(Token_stream& ts){
 bool literal(Token_stream& ts)
 {
   Token t = ts.get();
-  if(t.kind == '8' || t.kind == '"'){
+  if(t.kind == '8'){
+	stringstream ss;
+	ss << t.value;
+	lit_list.push_back(ss.str());
     return true;
+	}
+	else if(t.kind == '"')
+	{
+		lit_list.push_back(t.str);
+		return true;
 	}
   ts.putback(t);
   return false;
@@ -319,10 +417,10 @@ bool type(Token_stream& ts)
 bool typed_attribute_list(Token_stream& ts)
 {
 	cout << "typed attribute list " << endl;
-  bool valid = attribute_name(ts) && type(ts);
+  bool valid = attribute_name(ts, "attr") && type(ts);
   if(!valid)
     return false;
-  while(attribute_name(ts) && type(ts)) {}
+  while(attribute_name(ts, "attr") && type(ts)) {}
   return true;
 }
 
@@ -330,19 +428,61 @@ bool insert(Token_stream& ts){
   bool valid = name_check(ts, "INSERT") && name_check(ts, "INTO") && relation_name(ts) && name_check(ts, "VALUES") && name_check(ts, "FROM");
   if(!valid)
     return false;
-  if(literal_list(ts))
-    return true;
-  return name_check(ts, "RELATION") && expr(ts);
+  if(literal_list(ts)){
+	d.Insert(rel_names[0], lit_list);
+	return true;
+	}
+	bool ret = name_check(ts, "RELATION") && expr(ts);
+	if(ret){
+		for(int i = 0; i < d.relation.size(); i++)
+		{
+			if(d.relation[i].name == rel_names.back())
+			{
+				for(int j = 0; j < d.relation[i].getRowSize(); j++)
+				{
+					vector<Cell> row = d.relation[i].getRow(j);
+					d.Insert(rel_names[0], row);
+				}
+			}
+		}
+	}
+  return ret;
 }
 
 bool _delete(Token_stream& ts)
 {
 	if(name_check(ts, "DELETE") && name_check(ts, "FROM") && relation_name(ts) && name_check(ts, "WHERE") && (ts.get().kind == '(' && condition(ts) && ts.get().kind == ')')) {
-		string s = attr_value[attr_value.size()-1];
-		d.Delete(rel_names[0], rel_names[1], operators[0], s);
-		attr_value.clear();
-		rel_names.clear();
-		operators.clear();
+	string rel_name = rel_names.back();
+		d.Select( attr_value.back(), operators.back(), operands.back(), rel_names.back());
+	attr_value.pop_back();
+	operators.pop_back();
+	operands.pop_back();
+	rel_names.pop_back();
+	rel_names.push_back("Expression");
+	while(!conditions.empty())
+	{
+		d.Copy_table("Expression", "AtomicRight");
+		d.Select( attr_value.back(), operators.back(), operands.back(), rel_names.back());
+		attr_value.pop_back();
+		operators.pop_back();
+		operands.pop_back();
+		rel_names.pop_back();
+		rel_names.push_back("Expression");
+		if(conditions.back().kind == '|')
+		{
+			d.Copy_table("Expression", "AtomicLeft");
+			d.Union("Expression", "AtomicLeft", "AtomicRight");
+		}
+		else if(conditions.back().kind == '&')
+		{
+			d.Copy_table("Expression", "AtomicLeft");
+			d.Intersection("Expression", "AtomicLeft", "AtomicRight");
+		}
+		conditions.pop_back();
+	}
+	d.Copy_table(rel_name, "AtomicLeft");
+	d.Copy_table("Expression", "AtomicRight");
+	d.Difference(rel_name, "AtomicLeft", "AtomicRight");
 		return true;
 	}
 }
@@ -363,11 +503,48 @@ bool create(Token_stream& ts)
 
 bool update(Token_stream& ts)
 {
-  bool ret = name_check(ts, "UPDATE") && relation_name(ts) && name_check(ts, "SET") && attribute_name(ts) && ts.get().str == "=" && literal(ts);
+
+  bool ret = name_check(ts, "UPDATE") && relation_name(ts) && name_check(ts, "SET");
   if(!ret)
     return false;
-  while(attribute_name(ts) && ts.get().str == "=" && literal(ts)) {}
+	string rel_name = rel_names.back();
+  while(attribute_name(ts, "list") && ts.get().str == "=" && literal(ts)) {}
   ret = ret && name_check(ts, "WHERE") && condition(ts);
+  if(ret)
+  {//void Update(string rel_name, string attr_name, string literal, string condition_attr, string condition, string condition_literal);
+	d.Select( attr_value.back(), operators.back(), operands.back(), rel_names.back());
+	attr_value.pop_back();
+	operators.pop_back();
+	operands.pop_back();
+	rel_names.pop_back();
+	rel_names.push_back("Expression");
+	while(!conditions.empty())
+	{
+		d.Copy_table("Expression", "AtomicRight");
+		d.Select( attr_value.back(), operators.back(), operands.back(), rel_names.back());
+		attr_value.pop_back();
+		operators.pop_back();
+		operands.pop_back();
+		rel_names.pop_back();
+		rel_names.push_back("Expression");
+		if(conditions.back().kind == '|')
+		{
+			d.Copy_table("Expression", "AtomicLeft");
+			d.Union("Expression", "AtomicLeft", "AtomicRight");
+		}
+		else if(conditions.back().kind == '&')
+		{
+			d.Copy_table("Expression", "AtomicLeft");
+			d.Intersection("Expression", "AtomicLeft", "AtomicRight");
+		}
+		conditions.pop_back();
+	}
+	for(int i = 0; i < lit_list.size(); i++)
+	{
+		d.Update("Expression", attr_list[i], lit_list[i], "Expression");
+		d.Copy_table("Expression", rel_name);
+	}
+}
   return ret;
 }
 
@@ -378,30 +555,25 @@ bool show(Token_stream& ts){
 	rel_names.clear();
 	return true;
 	}
-	return false;
 }
 bool exit(Token_stream&ts){
-  return name_check(ts, "EXIT");
+	if(name_check(ts, "EXIT"))
+		exit(0);
+	else
+		return false;
 }
 bool write(Token_stream& ts){
   if(name_check(ts, "WRITE") && relation_name(ts)) {
-	d.Write(rel_names[0]);
+	d.Write(rel_names[0] );
 	rel_names.clear();
 	return true;
 	}
-	return false;
 }
 bool close(Token_stream& ts){
   return name_check(ts, "CLOSE") && relation_name(ts);
 }
 bool open(Token_stream& ts){
-	if(name_check(ts, "OPEN") && relation_name(ts))
-	{
-		d.Open(rel_names[0]);
-		rel_names.clear();
-		return true;
-	}
-	return false;
+  return name_check(ts, "OPEN") && relation_name(ts);
 }
 bool command(Token_stream& ts)
 {
@@ -458,8 +630,6 @@ int main(){
       cout << "THIS IS WRONG" << endl;
     else
       cout << " VALID SYNTAX " << endl;
-	 for(int i = 0; i < d.relation.size(); i++)
-		d.Show(d.relation[i].name);
 	rel_names.clear();
 	attr_type.clear();
 	operators.clear();
