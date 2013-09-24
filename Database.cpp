@@ -1,12 +1,18 @@
 #include "Database.h"
 #include <algorithm> 
+#include <iostream>
+#include <fstream>
 
 // Compute the projection of two relations
 void Database:: Project(vector<string> attr_name, string rel_name){
+	cout << "Project( {";
+		for(int i = 0; i < attr_name.size(); i++)
+			cout << attr_name[i] << ", ";
+	cout << "}, " << rel_name << ");" << endl;
 	for (int i = 0; i < relation.size(); ++i){
 		if (rel_name == relation[i].name){
 			Relation new_projection;    // create a new relation
-			new_projection.name = "Projection";    // rename the relation 
+			new_projection.name = "Expression";    // rename the relation 
 			for (int j = 0; j < attr_name.size(); ++j){
 				int attr_loc;
 				attr_loc = (relation[i].findAttribute(attr_name[j]));
@@ -20,8 +26,12 @@ void Database:: Project(vector<string> attr_name, string rel_name){
 				cerr << "None of the attributes requested were found to be projected from '" << rel_name << "'." <<endl;
 				return;
 			}
-			else 
-				Projection = new_projection;
+			else {
+				for (int i = 0; i < relation.size(); ++i){
+					if(relation[i].name == "Expression")
+					relation[i] = new_projection;
+				}
+			}
 			return;
 		}
 	}	
@@ -30,13 +40,14 @@ void Database:: Project(vector<string> attr_name, string rel_name){
 
 // function used to select a tuple that satisfies a particular condition in a relation
 void Database:: Select(string attr_name, string condition, string cell_condition, string rel_name) {
+	cout << "Select(" << attr_name << ", " << condition << ", " << cell_condition << ", " << rel_name << ");" << endl;
 	for (int i = 0; i < relation.size(); ++i){
 		if (rel_name == relation[i].name){
 			int attr_loc = relation[i].findAttribute(attr_name);
 			if (attr_loc != -1){
 				Relation new_selection = relation[i];
 				new_selection.clear_attr_cells();
-				new_selection.name = "Selection";
+				new_selection.name = "Expression";
 				vector<string> getCells = relation[i].attr[attr_loc].getCells();
 				vector<int> condition_metLoc;
 				
@@ -116,7 +127,11 @@ void Database:: Select(string attr_name, string condition, string cell_condition
 				else{
 					for (int j = 0; j < condition_metLoc.size(); ++j){
 						new_selection.Insert(relation[i].getRow(condition_metLoc[j]));
-						Selection = new_selection;
+						for (int i = 0; i < relation.size(); ++i){
+							if(relation[i].name == "Expression"){
+								relation[i] = new_selection;
+							}
+						}
 					}
 				}
 				return;
@@ -133,14 +148,22 @@ void Database:: Select(string attr_name, string condition, string cell_condition
 
 void Database::Update(string rel_name, string attr_name, string literal, string condition_attr, string condition, string condition_literal) {
 	Relation* r;
+	bool found = false;
 	for(int i = 0; i < relation.size(); i++)
 	{
 		if(rel_name == relation[i].name)
 		{
 			r = &relation[i];
+			found = true;
 			break;
 		}
 	}
+	
+	if(!found) {
+		cout << "Could not find a relation called " << rel_name << endl;
+		return;
+	}
+	
 	int attr_loc = r->findAttribute(condition_attr);    // Find the location of the attribute to be changed
 	if(attr_loc == -1)
 	{
@@ -240,13 +263,19 @@ void Database::Update(string rel_name, string attr_name, string literal, string 
 // Delete function is used to delete a certain tuple. it works pretty much like the update function.
 void Database::Delete(string rel_name, string condition_attr, string condition, string condition_literal) {
 	Relation* r;
+	bool found = false;
 	for(int i = 0; i < relation.size(); i++)
 	{
 		if(rel_name == relation[i].name)
 		{
 			r = &relation[i];
+			found = true;
 			break;
 		}
+	}
+	if(!found) {
+		cout << "Could not find a relation called " << rel_name << endl;
+		return;
 	}
 	int attr_loc = r->findAttribute(condition_attr);
 	if(attr_loc == -1)
@@ -350,18 +379,112 @@ void Database::Delete_attr(const string& rel_name,const string& attribute) {
   }
   cerr << "I did not find anything called "<< rel_name << endl;
 }
- 
- 
-// This function is used to change the name of a column
-void Database:: Rename(string rel_name,string new_name, string old_name) {
-  for (int i = 0; i < relation.size(); ++i){
-    if (rel_name == relation[i].name){
-      relation[i].Rename(new_name,old_name);
-      return;
-    }
-  }
-  cerr << "I did not find anything called "<< rel_name << endl;
+
+// void Database:: Rename(const string& newrel_name, const string& rel_name,vector<string> attr_names) {
+	// void Database:: Rename(const string& newrel_name, const string& rel_name,vector<string> attr_names) {
+	// for (int i = 0; i < relation.size(); ++i){
+		// if (rel_name == relation[i].name){
+			// Create(newrel_name);
+			// for(int i = 0; i < relation[i].getRowSize(); i++)
+				// {
+					// Insert(newrel_name.name, relation[i].getRow(i));
+				// }
+			// newrel_name.Rename(attr_names);
+			// return;
+		// }
+	// }
+  // cerr << "I did not find anything called "<< rel_name << endl;
+// }
+// }
+Relation Database:: Copy_table(const string rel_name, const string newrel_name) {
+	cout << "Copy_table(" << rel_name << ", " << newrel_name << ");" << endl;
+	if(rel_name == newrel_name)
+	{
+		for(int i = 0; i < relation.size(); i++)
+		{
+			if(newrel_name == relation[i].name)
+			{
+				return relation[i];
+			}
+		}
+	}
+	for(int i = 0; i < relation.size(); i++)
+	{
+		if(newrel_name == relation[i].name)
+		{
+			relation.erase(relation.begin() + i);
+			break;
+		}
+	}
+	Create(newrel_name);
+	bool found = false;
+	int i1,i2;
+	for (int i = 0; i < relation.size(); ++i){
+		if (newrel_name == relation[i].name){
+		i1 =i;
+		break;
+		}
+	}
+	for (int i = 0; i < relation.size(); ++i){
+		if (rel_name == relation[i].name){
+			i2 =i;
+			found = true;
+			break;
+		}
+	}
+	if(!found) {
+		cout << "Relation " << rel_name << " not found " << endl;
+		return Relation();
+	}
+	 for(int i = 0; i < relation[i2].getNumAttributes(); i++)
+	{
+		Attribute a = relation[i2].getAttribute(i);
+		relation[i1].add_attr(a.getName(), a.type);
+	}
+  
+    for(int i = 0; i < relation[i2].getRowSize(); i++)
+	{
+		Insert(relation[i1].name, relation[i2].getRow(i));
+	}
+	return relation[i1];
 }
+
+void Database:: Rename(const string& newrel_name, const string& rel_name,vector<string> attr_names) {
+	Create(newrel_name);
+	bool found = false;
+	int i1,i2;
+	for (int i = 0; i < relation.size(); ++i){
+		if (newrel_name == relation[i].name){
+		i1 =i;
+		break;
+		}
+	}
+	for (int i = 0; i < relation.size(); ++i){
+		if (rel_name == relation[i].name){
+			i2 =i;
+			found = true;
+			break;
+		}
+	}
+	if(!found) {
+		cout << "Relation " << rel_name << " not found " << endl;
+		return;
+	}
+	 for(int i = 0; i < relation[i2].getNumAttributes(); i++)
+	{
+		Attribute a = relation[i2].getAttribute(i);
+		relation[i1].add_attr(a.getName(), a.type);
+	}
+  
+    for(int i = 0; i < relation[i2].getRowSize(); i++)
+	{
+		Insert(relation[i1].name, relation[i2].getRow(i));
+	}
+	relation[i1].Rename(attr_names);
+
+}
+ 
+
 // This function is going to add columns in our table when we initially create a table. 
 // This allows us to have tables with different sizes. 
 void Database::AddColumn(const string& rel_name, const Header& h){
@@ -387,23 +510,63 @@ void Database:: Insert(string rel_name, const vector<Cell>& row) {
 
 // Call the rlation constructor
 void Database:: Create(string rel_name) {
+cout << "Create(" << rel_name << ");" << endl;
   relation.push_back(Relation(rel_name));
 }
 
-
-//Delete a relation from the database
-void Database:: Delete(string rel_name) {
-  for(int i = 0; i < relation.size(); i++)
+void Database:: Open(const string& rel_name) {
+/*vector<string> rel_names;
+vector<Type> attr_type;
+vector<string> operators;
+vector<string> attr_value;
+  ifstream infile((rel_name + ".db").c_str());
+  string line;
+  while(getline(infile, line))
   {
-	if(rel_name == relation[i].name) {
-		relation.erase(relation.begin() + i);
-		return;
-	}
-  }
-  cerr << "I did not find anything called " << rel_name << endl;
+    Token_stream ts;
+    ts.ss.clear();
+    ts.ss.str("");
+    ts.ss << line;
+	program(ts);
+	rel_names.clear();
+	attr_type.clear();
+	operators.clear();
+	attr_value.clear();
+  }*/
 }
 
+
 void Database:: Write(const string& rel_name) {
+	ofstream file;
+	file.open((rel_name + ".db").c_str());
+	Attribute primary;
+	for(int i = 0; i < relation.size(); i++)
+	{
+		if(relation[i].name != rel_name)
+			continue;
+		file << "CREATE TABLE " << rel_name << " (";
+		for(int j = 0; j < relation[i].attr.size(); j++)
+		{
+			if(j == 0)
+				primary = relation[i].attr[j];
+			file << relation[i].attr[j].name << " " << ((relation[i].attr[j].type == INT) ? "INTEGER" : "VARCHAR") << "(1)";
+			if(j + 1 < relation[i].attr.size())
+				file << ", ";
+		}
+		file << ") PRIMARY KEY (" << primary.name << ");\n";
+		for(int j = 0; j < relation[i].getRowSize(); j++)
+		{
+			vector<string> row = relation[i].getRow(j);
+			file << "INSERT INTO " << rel_name << " VALUES FROM (";
+			for(int k = 0; k < relation[i].attr.size(); k++)
+			{
+				file << ((relation[i].attr[k].type == INT) ? row[k] : ("\"" + row[k] + "\""));
+				if(k + 1 < relation[i].attr.size())
+					file << ", ";
+			}
+			file << ");\n";
+		}
+	}
   cout << "Requires file I/O, will be done in the next part " << endl;
 }
 
@@ -424,6 +587,9 @@ Relation& Database::operator[](const string& s){
 
 // Computes the union of two relations and stores it in a new relation
 void Database::Union(const string& rel_name1, const string& rel_name2,const string& rel_name3) {
+for(int i = 0; i < relation.size(); i++)
+	Show(relation[i].name);
+	cout << "Union(" << rel_name1 << ", " << rel_name2 << ", " << rel_name3 << ");" << endl;
   int i1,i2,i3;
 
   // Find if the relations exist in the database and store their index
@@ -437,7 +603,7 @@ void Database::Union(const string& rel_name1, const string& rel_name2,const stri
   for (int i = 0; i < relation.size(); ++i){
     if (rel_name1 == relation[i].name){
       i1 =i;
-      break;
+	  break;
     }
   }
   for (int i = 0; i < relation.size(); ++i){
@@ -452,7 +618,7 @@ void Database::Union(const string& rel_name1, const string& rel_name2,const stri
       break;
     }
   }
-
+  cout << "Size: " << relation[i2].getNumAttributes() << ", " << relation[i3].getNumAttributes() << endl;
   // Check if the number of columns in the two table is the same
   if(relation[i2].getNumAttributes() != relation[i3].getNumAttributes())
   {
@@ -600,6 +766,10 @@ void Database::Product(const string& rel_name1, const string& rel_name2, const s
       break;
     }
   }
+  cout << "First: " << endl;
+  relation[i2].Show();
+  cout << "Second: " << endl;
+  relation[i3].Show();
   
   for(int i = 0; i < relation[i2].getNumAttributes(); i++)
   {
