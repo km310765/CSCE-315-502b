@@ -5,10 +5,6 @@
 
 // Compute the projection of two relations
 void Database:: Project(vector<string> attr_name, string rel_name){
-	cout << "Project( {";
-		for(int i = 0; i < attr_name.size(); i++)
-			cout << attr_name[i] << ", ";
-	cout << "}, " << rel_name << ");" << endl;
 	for (int i = 0; i < relation.size(); ++i){
 		if (rel_name == relation[i].name){
 			Relation new_projection;    // create a new relation
@@ -40,7 +36,6 @@ void Database:: Project(vector<string> attr_name, string rel_name){
 
 // function used to select a tuple that satisfies a particular condition in a relation
 void Database:: Select(string attr_name, string condition, string cell_condition, string rel_name) {
-	cout << "Select(" << attr_name << ", " << condition << ", " << cell_condition << ", " << rel_name << ");" << endl;
 	for (int i = 0; i < relation.size(); ++i){
 		if (rel_name == relation[i].name){
 			int attr_loc = relation[i].findAttribute(attr_name);
@@ -146,14 +141,14 @@ void Database:: Select(string attr_name, string condition, string cell_condition
 
 // Update function is used to update a certain cell that satisfies a particular condition. 
 
-void Database::Update(string rel_name, string attr_name, string literal, string condition_attr, string condition, string condition_literal) {
-	Relation* r;
+void Database::Update(string rel_name, string attr_name, string literal, string rel_name2) {
+	int i1, i2;
 	bool found = false;
 	for(int i = 0; i < relation.size(); i++)
 	{
 		if(rel_name == relation[i].name)
 		{
-			r = &relation[i];
+			i1 = i;
 			found = true;
 			break;
 		}
@@ -164,97 +159,29 @@ void Database::Update(string rel_name, string attr_name, string literal, string 
 		return;
 	}
 	
-	int attr_loc = r->findAttribute(condition_attr);    // Find the location of the attribute to be changed
-	if(attr_loc == -1)
+	found = false;
+	
+	for(int i = 0; i < relation.size(); i++)
 	{
-		cerr << "Could not find attribute: " << condition_attr << endl;
+		if(rel_name2 == relation[i].name)
+		{
+			i2 = i;
+			found = true;
+			break;
+		}
+	}
+	
+	if(!found) {
+		cout << "Could not find a relation called " << rel_name2 << endl;
 		return;
 	}
-	Relation selection = *r;
-	selection.clear_attr_cells();
-	selection.name = "Selection";
-	vector<string> cells = r->attr[attr_loc].getCells();
-	vector<int> condition_metLoc;
-
-  // look for different conditions 
-	if(condition == ">"){
-		if(r->attr[attr_loc].getType() == INT){
-			for (int j = 0; j < cells.size(); ++j){
-				int getCell = atoi(cells[j].c_str());//conversion from string to int
-				int cell_cond = atoi(condition_literal.c_str());
-				if (getCell > cell_cond){
-					condition_metLoc.push_back(j);
-					}
-			}
-		}
-		else
-			cerr << "The attribute '" << condition_attr << "' in relation '" << rel_name << "' is not of int type." << endl;
-	}
-	else if(condition == "<"){
-		if(r->attr[attr_loc].getType() == INT){
-			for (int j = 0; j < cells.size(); ++j){
-				int getCell = atoi(cells[j].c_str());//conversion from string to int
-				int cell_cond = atoi(condition_literal.c_str());
-				if (getCell < cell_cond){
-					condition_metLoc.push_back(j);
-					}
-			}
-		}
-		else
-			cerr << "The attribute '" << condition_attr << "' in relation '" << rel_name << "' is not of int type." << endl;
-	}
-	else if(condition == "<="){
-		if(r->attr[attr_loc].getType() == INT){
-			for (int j = 0; j < cells.size(); ++j){
-				int getCell = atoi(cells[j].c_str());//conversion from string to int
-				int cell_cond = atoi(condition_literal.c_str());
-				if (getCell <= cell_cond){
-					condition_metLoc.push_back(j);
-					}
-			}
-		}
-		else
-			cerr << "The attribute '" << condition_attr << "' in relation '" << rel_name << "' is not of int type." << endl;
-	}
-	else if(condition == ">="){
-		if(r->attr[attr_loc].getType() == INT){
-			for (int j = 0; j < cells.size(); ++j){
-				int getCell = atoi(cells[j].c_str());//conversion from string to int
-				int cell_cond = atoi(condition_literal.c_str());
-				if (getCell >= cell_cond){
-					condition_metLoc.push_back(j);
-					}
-			}
-		}
-		else
-			cerr << "The attribute '" << condition_attr << "' in relation '" << rel_name << "' is not of int type." << endl;
-	}
-	else if(condition == "=="){
-		for (int j = 0; j < cells.size(); ++j){
-			if (cells[j] == condition_literal){
-				condition_metLoc.push_back(j);
-				}
-		}
-	}
-	else if(condition == "!="){
-		for (int j = 0; j < cells.size(); ++j){
-			if (cells[j] != condition_literal){
-				condition_metLoc.push_back(j);
-				}
-		}
-	}
-	else 
-		cerr << "Not a valid condition, use '>', '<', or '=='." << endl;
-	if(condition_metLoc.size() == 0){
-			cerr << "No cells were found to meet that condition in attribute '" << condition_attr << "' of relation '" << rel_name << "'." <<endl;
-			return;
-		}
-	else{
-		for (int j = 0; j < condition_metLoc.size(); ++j){
-			vector<Cell> row = r->getRow(condition_metLoc[j]);
-			int attr_loc = r->findAttribute(attr_name);
-			row[attr_loc] = literal;
-			r->setRow(condition_metLoc[j], row);
+	
+	for(int i = 0; i < relation[i1].attr.size(); i++)
+	{
+		if(relation[i1].attr[i].name == attr_name)
+		{
+			for(int j = 0; j < relation[i1].attr[i].cell.size(); j++)
+				relation[i1].attr[i].cell[j] = literal;
 		}
 	}
 	
@@ -397,7 +324,6 @@ void Database::Delete_attr(const string& rel_name,const string& attribute) {
 // }
 // }
 Relation Database:: Copy_table(const string rel_name, const string newrel_name) {
-	cout << "Copy_table(" << rel_name << ", " << newrel_name << ");" << endl;
 	if(rel_name == newrel_name)
 	{
 		for(int i = 0; i < relation.size(); i++)
@@ -510,7 +436,6 @@ void Database:: Insert(string rel_name, const vector<Cell>& row) {
 
 // Call the rlation constructor
 void Database:: Create(string rel_name) {
-cout << "Create(" << rel_name << ");" << endl;
   relation.push_back(Relation(rel_name));
 }
 
@@ -567,7 +492,6 @@ void Database:: Write(const string& rel_name) {
 			file << ");\n";
 		}
 	}
-  cout << "Requires file I/O, will be done in the next part " << endl;
 }
 
 
@@ -589,7 +513,6 @@ Relation& Database::operator[](const string& s){
 void Database::Union(const string& rel_name1, const string& rel_name2,const string& rel_name3) {
 for(int i = 0; i < relation.size(); i++)
 	Show(relation[i].name);
-	cout << "Union(" << rel_name1 << ", " << rel_name2 << ", " << rel_name3 << ");" << endl;
   int i1,i2,i3;
 
   // Find if the relations exist in the database and store their index
@@ -618,7 +541,6 @@ for(int i = 0; i < relation.size(); i++)
       break;
     }
   }
-  cout << "Size: " << relation[i2].getNumAttributes() << ", " << relation[i3].getNumAttributes() << endl;
   // Check if the number of columns in the two table is the same
   if(relation[i2].getNumAttributes() != relation[i3].getNumAttributes())
   {
@@ -660,6 +582,75 @@ for(int i = 0; i < relation.size(); i++)
         }
       }
 	  if(!found)
+		Insert(relation[i1].name,relation[i3].getRow(j));
+    }
+}
+
+void Database::Intersection(const string& rel_name1, const string& rel_name2,const string& rel_name3) {
+  int i1,i2,i3;
+
+  // Find if the relations exist in the database and store their index
+  for(int i = 0; i < relation.size(); i++)
+  {
+	if(rel_name1 == relation[i].name) {
+		relation.erase(relation.begin() + i);
+	}
+  }
+  Create(rel_name1);
+  for (int i = 0; i < relation.size(); ++i){
+    if (rel_name1 == relation[i].name){
+      i1 =i;
+	  break;
+    }
+  }
+  for (int i = 0; i < relation.size(); ++i){
+    if (rel_name2 == relation[i].name){
+      i2 =i;
+      break;
+    }
+  }
+  for (int i = 0; i < relation.size(); ++i){
+    if (rel_name3 == relation[i].name){
+      i3 = i;
+      break;
+    }
+  }
+  // Check if the number of columns in the two table is the same
+  if(relation[i2].getNumAttributes() != relation[i3].getNumAttributes())
+  {
+	cerr << "Size does not match " << endl;
+	return;
+	}
+
+  // Check if the attributes have the same type
+  for(int i=0; i<relation[i2].getNumAttributes();i++){
+    if(relation[i2].getAttributeType(i) != relation[i3].getAttributeType(i)) {
+      cerr << "Attributes do not have the same type, cannot insert " << endl;
+      return;
+    }
+  }
+  
+  for(int i = 0; i < relation[i2].getNumAttributes(); i++)
+  {
+	Attribute a = relation[i2].getAttribute(i);
+	relation[i1].add_attr(a.getName(), a.type);
+  }
+
+
+    //Create(rel_name2+rel_name3+"Union");
+    bool insrt = true;
+
+    int i2Rowsize = relation[i2].getRowSize();
+    int jrowsize = relation[i3].getRowSize();
+    for(int j=0; j < jrowsize; j++) {
+		bool found = false;
+      for(int i=0; i < relation[i2].getRowSize(); i++) {
+        if(relation[i3].getRow(j) == relation[i2].getRow(i)) {
+		found = true;
+          break;
+        }
+      }
+	  if(found)
 		Insert(relation[i1].name,relation[i3].getRow(j));
     }
 }
@@ -766,10 +757,6 @@ void Database::Product(const string& rel_name1, const string& rel_name2, const s
       break;
     }
   }
-  cout << "First: " << endl;
-  relation[i2].Show();
-  cout << "Second: " << endl;
-  relation[i3].Show();
   
   for(int i = 0; i < relation[i2].getNumAttributes(); i++)
   {
