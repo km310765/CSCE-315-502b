@@ -114,12 +114,22 @@ class Relation{//relation has a vector of attributes and a name. This is basical
 		cerr << "Relation '" << name << "' has no members." << endl;
     }
 
-    void Rename(string new_name, string old_name) {//renames an attribute with a new name
-      for(int i =0; i < attr.size(); i++) {
-        if(old_name == attr[i].name) {
-          attr[i].name = new_name;
-        }
-      }
+    // void Rename(string new_name, string old_name) {//renames an attribute with a new name
+      // for(int i =0; i < attr.size(); i++) {
+        // if(old_name == attr[i].name) {
+          // attr[i].name = new_name;
+        // }
+      // }
+    // }
+	
+	void Rename(vector<string> attr_names) {//renames an attribute with a new name
+		if(attr_names.size() != attr.size()) {
+			cout << "Number of attributes is not the same as the names to change. " << endl;
+			return;
+		}
+		for(int i =0; i < attr.size(); i++) {
+			attr[i].name = attr_names[i];
+		}
     }
 
     void Insert(vector<Cell> row) { //inserts a tuple
