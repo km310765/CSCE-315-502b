@@ -45,7 +45,6 @@ class Attribute{
   Cell& operator[](size_t row){
     return cell[row];
   }
-    //string getName();
 };
 
 #endif
