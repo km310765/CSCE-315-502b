@@ -511,8 +511,8 @@ Relation& Database::operator[](const string& s){
 
 // Computes the union of two relations and stores it in a new relation
 void Database::Union(const string& rel_name1, const string& rel_name2,const string& rel_name3) {
-for(int i = 0; i < relation.size(); i++)
-	Show(relation[i].name);
+//for(int i = 0; i < relation.size(); i++)
+	//Show(relation[i].name);
   int i1,i2,i3;
 
   // Find if the relations exist in the database and store their index
