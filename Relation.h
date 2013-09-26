@@ -115,7 +115,7 @@ class Relation{//relation has a vector of attributes and a name. This is basical
     }
 
     // void Rename(string new_name, string old_name) {//renames an attribute with a new name
-      // for(int i =0; i < attr.size(); i++) {
+      // for(int i =i0; i < attr.size(); i++) {
         // if(old_name == attr[i].name) {
           // attr[i].name = new_name;
         // }
