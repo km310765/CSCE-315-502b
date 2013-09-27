@@ -34,8 +34,106 @@ void Database:: Project(vector<string> attr_name, string rel_name){
 	cerr << "I did not find anything called "<< rel_name << endl;
 }
 
+void Database::SelectAttribute(string attr_name1, string condition, string attr_name2, string rel_name)
+{
+	for(int i = 0; i < relation.size(); i++)
+	{
+		if(rel_name == relation[i].name)
+		{
+			int attr_loc1 = relation[i].findAttribute(attr_name1);
+			int attr_loc2 = relation[i].findAttribute(attr_name2);
+			if(attr_loc1 == -1)
+			{
+				cerr << "No attribute '" << attr_name1 << "' was found in " << rel_name <<"." << endl;
+				return;
+			}
+			if(attr_loc2 == -1)
+			{
+				cerr << "No attribute '" << attr_name2 << "' was found in " << rel_name <<"." << endl;
+				return;
+			}
+			Relation new_selection = relation[i];
+			new_selection.clear_attr_cells();
+			new_selection.name = "Expression";
+			vector<string> getCells1 = relation[i].attr[attr_loc1].getCells();
+			vector<string> getCells2 = relation[i].attr[attr_loc2].getCells();
+			vector<int> condition_metLoc;
+			
+			if(condition == ">")
+			{
+				for(int j = 0; j < getCells1.size(); j++)
+				{
+					if(getCells1[j] > getCells2[j])
+						condition_metLoc.push_back(j);
+				}
+			}
+			else if(condition == "<")
+			{
+				for(int j = 0; j < getCells1.size(); j++)
+				{
+					if(getCells1[j] < getCells2[j])
+						condition_metLoc.push_back(j);
+				}
+			}
+			else if(condition == ">=")
+			{
+				for(int j = 0; j < getCells1.size(); j++)
+				{
+					if(getCells1[j] >= getCells2[j])
+						condition_metLoc.push_back(j);
+				}
+			}
+			else if(condition == "<=")
+			{
+				for(int j = 0; j < getCells1.size(); j++)
+				{
+					if(getCells1[j] <= getCells2[j])
+						condition_metLoc.push_back(j);
+				}
+			}
+			else if(condition == "==")
+			{
+				for(int j = 0; j < getCells1.size(); j++)
+				{
+					if(getCells1[j] == getCells2[j])
+						condition_metLoc.push_back(j);
+				}
+			}
+			else if(condition == "!=")
+			{
+				for(int j = 0; j < getCells1.size(); j++)
+				{
+					if(getCells1[j] != getCells2[j])
+						condition_metLoc.push_back(j);
+				}
+			}
+			else
+			{
+				cerr << "Not a valid condition, use '>', '<', or '=='." << endl;
+				return;
+			}
+			
+			if(condition_metLoc.size() == 0)
+			{
+				cerr << "No cells were found to meet that condition in relation '" << rel_name << "'." <<endl;
+				return;
+			}
+			for(int j = 0; j < condition_metLoc.size(); ++j)
+			{
+				new_selection.Insert(relation[i].getRow(condition_metLoc[j]));
+				for(int i = 0; i < relation.size(); ++i)
+				{
+					if(relation[i].name == "Expression")
+						relation[i] = new_selection;
+				}
+			}
+			return;
+		}
+	}
+}
+
 // function used to select a tuple that satisfies a particular condition in a relation
-void Database:: Select(string attr_name, string condition, string cell_condition, string rel_name) {
+void Database:: SelectLiteral(string attr_name, string condition, string cell_condition, string rel_name) {
 	for (int i = 0; i < relation.size(); ++i){
 		if (rel_name == relation[i].name){
 			int attr_loc = relation[i].findAttribute(attr_name);
@@ -376,6 +474,14 @@ Relation Database:: Copy_table(const string rel_name, const string newrel_name) 
 }
 
 void Database:: Rename(const string& newrel_name, const string& rel_name,vector<string> attr_names) {
+	for(int i = 0; i < relation.size(); i++)
+	{
+		if(relation[i].name == newrel_name)
+		{
+			relation.erase(relation.begin() + i);
+			i--;
+		}
+	}
 	Create(newrel_name);
 	bool found = false;
 	int i1,i2;
@@ -502,7 +608,7 @@ void Database:: Show(string rel_name) {
       return;
     }
   }
-  cerr << "I did not find anything called "<< rel_name << endl;
+  throw ("Relation " + rel_name + " not found");
 }
 Relation& Database::operator[](const string& s){
   return table[s]; 
@@ -686,7 +792,6 @@ void Database::Difference(const string& rel_name1, const string& rel_name2, cons
       break;
     }
   }
-  
   // Check if the attributes have same type and same length
   if(relation[i2].getNumAttributes() != relation[i3].getNumAttributes())
   {
