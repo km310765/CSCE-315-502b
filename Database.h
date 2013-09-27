@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <map>
+#include <exception>
 #include "Relation.h"
 
 using namespace std;
@@ -16,7 +17,8 @@ class Database {
 	Database(){Create("Expression");}
 	//Database(){};
 	Table table;
-	void Select(string attr_name, string condition, string cell_condition, string rel_name);
+	void SelectAttribute(string attr_name1, string condition, string attr_name2, string rel_name);
+	void SelectLiteral(string attr_name, string condition, string cell_condition, string rel_name);
 	void Update(string rel_name, string attr_name, string literal, string rel_name2);
 	void Delete(string rel_name, string condition_attr, string condition, string condition_literal);
 	void Project(vector<string> attr_name, string rel_name);
