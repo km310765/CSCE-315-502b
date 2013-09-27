@@ -12,7 +12,7 @@ vector<string> create_names;
 
 //Operations storage
 vector<string> operators;
-vector<string> operands;
+vector<Token> operands;
 
 //Attribute storage
 vector<string> attr_value;
@@ -178,16 +178,20 @@ bool attribute_name(Token_stream& ts, string kind)
 bool operand(Token_stream& ts)
 {
   if(attribute_name(ts, "attr"))
+  {
+	operands.push_back(Token('a', attr_value.back()));
+	attr_value.pop_back();
     return true;
+	}
   Token t = ts.get();
   if(t.kind == '8') {
 	stringstream ss;
 	ss << t.value;
-	operands.push_back(ss.str());
+	operands.push_back(t);
     return true;
 	}
 if(t.kind == '"'){
-	operands.push_back(t.str);
+	operands.push_back(t);
 	return true;
 }
   ts.putback(t);
@@ -205,9 +209,11 @@ bool op(Token_stream& ts)
   return false;
 }
 
+bool condition(Token_stream& ts);
+
 bool comparison(Token_stream& ts)
 {  
-  return (operand(ts) && op(ts) && operand(ts)) || (ts.get().kind == '(' && op(ts) && ts.get().kind == ')');
+  return (operand(ts) && op(ts) && operand(ts)) || (ts.get().kind == '(' && condition(ts) && ts.get().kind == ')');
 }
 
 bool conjunction(Token_stream& ts)
@@ -243,8 +249,19 @@ bool selection(Token_stream& ts)
 {
 	bool ret = name_check(ts, "select") && ts.get().kind == '(' && condition(ts) && ts.get().kind == ')' && atomic_expr(ts);
 	if(ret){//(string attr_name, string condition, string cell_condition, string rel_name)
-		d.Select( attr_value.back(), operators.back(), operands.back(), rel_names.back());
-		attr_value.pop_back();
+		//cout << "Select(" << attr_value.back() << ", " << operators.back() << ", " << operands.back() << ", " << ");" << endl;
+		Token back = operands.back();
+		operands.pop_back();
+		if(back.kind == '8')
+		{
+			stringstream ss;
+			ss << back.value;
+			d.SelectLiteral( operands.back().str, operators.back(), ss.str(), rel_names.back());
+		}
+		else if(back.kind == '"')
+			d.SelectLiteral( operands.back().str, operators.back(), back.str, rel_names.back());
+		else if(back.kind == 'a')
+			d.SelectAttribute(operands.back().str, operators.back(), back.str, rel_names.back());
 		operators.pop_back();
 		operands.pop_back();
 		rel_names.pop_back();
@@ -252,8 +269,18 @@ bool selection(Token_stream& ts)
 		while(!conditions.empty())
 		{
 			d.Copy_table("Expression", "AtomicRight");
-			d.Select( attr_value.back(), operators.back(), operands.back(), rel_names.back());
-			attr_value.pop_back();
+			Token back = operands.back();
+			operands.pop_back();
+			if(back.kind == '8')
+			{
+				stringstream ss;
+				ss << back.value;
+				d.SelectLiteral( operands.back().str, operators.back(), ss.str(), rel_names.back());
+			}
+			else if(back.kind == '"')
+				d.SelectLiteral( operands.back().str, operators.back(), back.str, rel_names.back());
+			else if(back.kind == 'a')
+				d.SelectAttribute(operands.back().str, operators.back(), back.str, rel_names.back());
 			operators.pop_back();
 			operands.pop_back();
 			rel_names.pop_back();
@@ -286,7 +313,15 @@ bool projection(Token_stream& ts)
 {
   bool ret = name_check(ts, "project") && ts.get().kind == '(' && attribute_list(ts) && ts.get().kind == ')' && atomic_expr(ts);
   if(ret){//Project(vector<string> attr_name, string rel_name);
-	d.Project(attr_list, rel_names.back());
+	try
+	{
+		d.Project(attr_list, rel_names.back());
+	}
+	catch(string str)
+	{
+		cerr << str << endl;
+		return false;
+	}
 	attr_list.clear();
 	rel_names.pop_back();
 	rel_names.push_back("Expression");
@@ -456,8 +491,18 @@ bool _delete(Token_stream& ts)
 {
 	if(name_check(ts, "DELETE") && name_check(ts, "FROM") && relation_name(ts) && name_check(ts, "WHERE") && (ts.get().kind == '(' && condition(ts) && ts.get().kind == ')')) {
 	string rel_name = rel_names.back();
-		d.Select( attr_value.back(), operators.back(), operands.back(), rel_names.back());
-	attr_value.pop_back();
+	Token back = operands.back();
+	operands.pop_back();
+	if(back.kind == '8')
+	{
+		stringstream ss;
+		ss << back.value;
+		d.SelectLiteral( operands.back().str, operators.back(), ss.str(), rel_names.back());
+	}
+	else if(back.kind == '"')
+		d.SelectLiteral( operands.back().str, operators.back(), back.str, rel_names.back());
+	else if(back.kind == 'a')
+			d.SelectAttribute(operands.back().str, operators.back(), back.str, rel_names.back());
 	operators.pop_back();
 	operands.pop_back();
 	rel_names.pop_back();
@@ -465,8 +510,18 @@ bool _delete(Token_stream& ts)
 	while(!conditions.empty())
 	{
 		d.Copy_table("Expression", "AtomicRight");
-		d.Select( attr_value.back(), operators.back(), operands.back(), rel_names.back());
-		attr_value.pop_back();
+		Token back = operands.back();
+		operands.pop_back();
+		if(back.kind == '8')
+		{
+			stringstream ss;
+			ss << back.value;
+			d.SelectLiteral( operands.back().str, operators.back(), ss.str(), rel_names.back());
+		}
+		else if(back.kind == '"')
+			d.SelectLiteral( operands.back().str, operators.back(), back.str, rel_names.back());
+		else if(back.kind == 'a')
+				d.SelectAttribute(operands.back().str, operators.back(), back.str, rel_names.back());
 		operators.pop_back();
 		operands.pop_back();
 		rel_names.pop_back();
@@ -516,8 +571,18 @@ bool update(Token_stream& ts)
   ret = ret && name_check(ts, "WHERE") && condition(ts);
   if(ret)
   {//void Update(string rel_name, string attr_name, string literal, string condition_attr, string condition, string condition_literal);
-	d.Select( attr_value.back(), operators.back(), operands.back(), rel_names.back());
-	attr_value.pop_back();
+	Token back = operands.back();
+	operands.pop_back();
+	if(back.kind == '8')
+	{
+		stringstream ss;
+		ss << back.value;
+		d.SelectLiteral( operands.back().str, operators.back(), ss.str(), rel_names.back());
+	}
+	else if(back.kind == '"')
+		d.SelectLiteral( operands.back().str, operators.back(), back.str, rel_names.back());
+	else if(back.kind == 'a')
+		d.SelectAttribute(operands.back().str, operators.back(), back.str, rel_names.back());
 	operators.pop_back();
 	operands.pop_back();
 	rel_names.pop_back();
@@ -525,8 +590,18 @@ bool update(Token_stream& ts)
 	while(!conditions.empty())
 	{
 		d.Copy_table("Expression", "AtomicRight");
-		d.Select( attr_value.back(), operators.back(), operands.back(), rel_names.back());
-		attr_value.pop_back();
+		Token back = operands.back();
+		operands.pop_back();
+		if(back.kind == '8')
+		{
+			stringstream ss;
+			ss << back.value;
+			d.SelectLiteral( operands.back().str, operators.back(), ss.str(), rel_names.back());
+		}
+		else if(back.kind == '"')
+			d.SelectLiteral( operands.back().str, operators.back(), back.str, rel_names.back());
+		else if(back.kind == 'a')
+			d.SelectAttribute(operands.back().str, operators.back(), back.str, rel_names.back());
 		operators.pop_back();
 		operands.pop_back();
 		rel_names.pop_back();
@@ -545,17 +620,30 @@ bool update(Token_stream& ts)
 	}
 	for(int i = 0; i < lit_list.size(); i++)
 	{
+		d.Copy_table(rel_name, "AtomicExpression");
+		d.Difference(rel_name, "AtomicExpression", "Expression");
 		d.Update("Expression", attr_list[i], lit_list[i], "Expression");
-		d.Copy_table("Expression", rel_name);
+		d.Copy_table(rel_name, "AtomicExpression");
+		d.Union(rel_name, "AtomicExpression", "Expression");
 	}
 }
   return ret;
 }
 
-bool show(Token_stream& ts){
-  if( name_check(ts, "SHOW") && atomic_expr(ts)) {
-	d.Show(rel_names[0]);
-	return true;
+bool show(Token_stream& ts)
+{
+	if( name_check(ts, "SHOW") && atomic_expr(ts))
+	{
+		try
+		{
+			d.Show(rel_names[0]);
+		}
+		catch(string s)
+		{
+			cerr << s << endl;
+			return false;
+		}
+		return true;
 	}
 }
 bool exit(Token_stream&ts){
@@ -614,10 +702,6 @@ void Parser::parse(string line)
 	ts.ss.clear();
 	ts.ss.str("");
 	ts.ss << line;
-	if(!program(ts))
-	  cout << "THIS IS WRONG" << endl;
-	else
-	  cout << " VALID SYNTAX " << endl;
 	rel_names.clear();
 	attr_type.clear();
 	attr_list.clear();
@@ -627,6 +711,10 @@ void Parser::parse(string line)
 	conditions.clear();
 	create_names.clear();
 	operands.clear();
+	if(!program(ts))
+	  cout << "THIS IS WRONG" << endl;
+	else
+	  cout << " VALID SYNTAX " << endl;
 }
 
 /*int main(){
