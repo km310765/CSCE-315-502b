@@ -10,9 +10,12 @@
 
 class Parser
 {
+private:
+	Database* d;
 public:
-	Parser() {}
-	void parse(string line);
+	Parser() { d = new Database(); }
+	Parser(Database* datab) : d(datab) {}
+	void parse(string line, bool print);
 };
 
 #endif
