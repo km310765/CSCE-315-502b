@@ -14,9 +14,18 @@ class DBApp {
 		void CreateTable();
 		void AddNewCar();
 		void DeleteCar(string car_name, string table_name);
-		void UpdateCar();
-		void SelectCar();
+		void UpdateCar(string table_name);
+		void ShowCarWithID(string table_name);
 		void ShowTable(string tablename);
+		void test();
+		void AddCar(string table_name);
+		void Exit();
+		void Diff();
+		void ShowCustomers();
+		void Create_Customer_table();
+		void SearchCarsByName();
+		void ShowCarsByManufacturers(string table_name);
+		void ShowCustomerNames();
 };
 
 #endif
