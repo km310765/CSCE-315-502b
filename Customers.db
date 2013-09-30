@@ -1,0 +1,4 @@
+CREATE TABLE Customers (Customer_ID INTEGER, FirstName VARCHAR(1), LastName VARCHAR(1), B_Car_ID VARCHAR(1)) PRIMARY KEY (Customer_ID);
+INSERT INTO Customers VALUES FROM (111, "Saurabh", "Mishra", "1");
+INSERT INTO Customers VALUES FROM (112, "Bradley", "Abbott", "2");
+INSERT INTO Customers VALUES FROM (113, "Michael", "Karnes", "3");
