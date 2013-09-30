@@ -40,8 +40,8 @@ void Database::write(string name)
 		for(int j = 0; j < relations[i]->get_num_primaries(); j++)
 		{
 			file << relations[i]->get_primary(j);
-			if(j + 1 < relations[i]->get_num_attributes())
-				file << ", ";
+			//if(j + 1 < relations[i]->get_num_attributes())
+				//file << ", ";
 		}
 		file << ");\n";
 		for(int j = 0; j < relations[i]->get_num_tuples(); j++)
