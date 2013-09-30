@@ -1,0 +1,4 @@
+CREATE TABLE Customers_car_info (Customer_ID INTEGER, FirstName VARCHAR(1), LastName VARCHAR(1), Car_ID INTEGER, Name VARCHAR(1), model VARCHAR(1), year INTEGER) PRIMARY KEY (Customer_ID);
+INSERT INTO Customers_car_info VALUES FROM (111, "Saurabh", "Mishra", 1, "Audi", "R8", 2013);
+INSERT INTO Customers_car_info VALUES FROM (112, "Bradley", "Abbott", 2, "Chevrolet", "Cobalt", 2013);
+INSERT INTO Customers_car_info VALUES FROM (113, "Michael", "Karnes", 3, "Chevrolet", "Impala", 2014);
