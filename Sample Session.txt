@@ -1,0 +1,571 @@
+Input line: OPEN cars;
+Input line: CREATE TABLE cars (Car_ID INTEGER, Name VARCHAR(1), model VARCHAR(1), year INTEGER) PRIMARY KEY (carid);
+Input line: INSERT INTO cars VALUES FROM (1, "Audi", "R8", 2013);
+Input line: INSERT INTO cars VALUES FROM (2, "Chevrolet", "Cobalt", 2013);
+Input line: INSERT INTO cars VALUES FROM (3, "Chevrolet", "Malibu", 2014);
+Input line: INSERT INTO cars VALUES FROM (4, "Nissan", "Altima", 2011);
+Input line: INSERT INTO cars VALUES FROM (5, "Audi", "A8", 2014);
+Input line: INSERT INTO cars VALUES FROM (6, "Chevrolet", "Silverado", 2001);
+Input line: INSERT INTO cars VALUES FROM (7, "Audi", "A8", 2015);
+Input line: INSERT INTO cars VALUES FROM (8, "Nissan", "Altima", 2013);
+ VALID SYNTAX
+Input line: OPEN Customers;
+Input line: CREATE TABLE Customers (Customer_ID INTEGER, FirstName VARCHAR(1), LastName VARCHAR(1), B_Car_ID VARCHAR(1)) PRIMARY KEY (Customer_ID);
+Input line: INSERT INTO Customers VALUES FROM (111, "Saurabh", "Mishra", "1");
+Input line: INSERT INTO Customers VALUES FROM (112, "Bradley", "Abbott", "2");
+Input line: INSERT INTO Customers VALUES FROM (113, "Michael", "Karnes", "3");
+ VALID SYNTAX
+Input line: OPEN Shipments;
+Input line: CREATE TABLE Shipments (Car_ID INTEGER, Name VARCHAR(1), model VARCHAR(1), year INTEGER) PRIMARY KEY (Car_ID);
+Input line: INSERT INTO Shipments VALUES FROM (7, "Audi", "A8", 2015);
+Input line: INSERT INTO Shipments VALUES FROM (8, "Nissan", "Altima", 2013);
+ VALID SYNTAX
+Input line: OPEN Customers_car_info;
+Input line: CREATE TABLE Customers_car_info (Customer_ID INTEGER, FirstName VARCHAR(1), LastName VARCHAR(1), Car_ID INTEGER, Name VARCHAR(1), model VARCHAR(1)) PRIMARY KEY (Customer_ID);
+Input line: INSERT INTO Customers_car_info VALUES FROM (111, "Saurabh", "Mishra", 1, "Audi", "R8");
+Input line: INSERT INTO Customers_car_info VALUES FROM (112, "Bradley", "Abbott", 2, "Chevrolet", "Cobalt");
+Input line: INSERT INTO Customers_car_info VALUES FROM (113, "Michael", "Karnes", 3, "Chevrolet", "Malibu");
+ VALID SYNTAX
+Input line: OPEN Unsold_Cars;
+Input line: CREATE TABLE Unsold_Cars (Car_ID INTEGER, Name VARCHAR(1), model VARCHAR(1), year INTEGER) PRIMARY KEY (carid);
+Input line: INSERT INTO Unsold_Cars VALUES FROM (4, "Nissan", "Altima", 2011);
+Input line: INSERT INTO Unsold_Cars VALUES FROM (5, "Audi", "A8", 2014);
+Input line: INSERT INTO Unsold_Cars VALUES FROM (6, "Chevrolet", "Silverado", 2001);
+ VALID SYNTAX
+
+Loaded tables cars, Customers, Shipments, Customers_car_info, and Unsold_Cars
+
+This is a simple Database Application
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+5
+Enter the name of the table to show
+cars
+Input line: SHOW cars;
+
+     ------------------------------------------------------------
+     cars TABLE
+     ------------------------------------------------------------
+         Car_ID           Name          model           year
+     ------------------------------------------------------------
+              1           Audi             R8           2013
+              2      Chevrolet         Cobalt           2013
+              3      Chevrolet         Malibu           2014
+              4         Nissan         Altima           2011
+              5           Audi             A8           2014
+              6      Chevrolet      Silverado           2001
+              7           Audi             A8           2015
+              8         Nissan         Altima           2013
+
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+4
+Enter the name of the table you want to update
+cars
+Choose the information about the  car that you would like to update
+1. Name of the car
+2. Id of the car
+3. Model of the car
+4. Year of the car
+3
+Enter old model of the car
+Malibu
+Enter new model of the car
+Impala
+Input line: UPDATE cars SET model = "Impala" WHERE model == "Malibu";
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+5
+Enter the name of the table to show
+cars
+Input line: SHOW cars;
+
+     ------------------------------------------------------------
+     cars TABLE
+     ------------------------------------------------------------
+         Car_ID           Name          model           year
+     ------------------------------------------------------------
+              1           Audi             R8           2013
+              2      Chevrolet         Cobalt           2013
+              3      Chevrolet         Impala           2014
+              4         Nissan         Altima           2011
+              5           Audi             A8           2014
+              6      Chevrolet      Silverado           2001
+              7           Audi             A8           2015
+              8         Nissan         Altima           2013
+
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+3
+Enter the name of the table you want to select from
+cars
+Input line: SHOW (project (Car_ID,Name) cars);
+
+     ------------------------------
+      TABLE
+     ------------------------------
+         Car_ID           Name
+     ------------------------------
+              1           Audi
+              2      Chevrolet
+              3      Chevrolet
+              4         Nissan
+              5           Audi
+              6      Chevrolet
+              7           Audi
+              8         Nissan
+
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+2
+Enter the name of the table from which the car needs to be deleted
+cars
+Enter the Car_ID of the car to be deleted
+6
+Input line: DELETE FROM cars WHERE (Car_ID == "6");
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+5
+Enter the name of the table to show
+cars
+Input line: SHOW cars;
+
+     ------------------------------------------------------------
+     cars TABLE
+     ------------------------------------------------------------
+         Car_ID           Name          model           year
+     ------------------------------------------------------------
+              1           Audi             R8           2013
+              2      Chevrolet         Cobalt           2013
+              3      Chevrolet         Impala           2014
+              4         Nissan         Altima           2011
+              5           Audi             A8           2014
+              7           Audi             A8           2015
+              8         Nissan         Altima           2013
+
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+1
+Enter the name of the table you want to add the cars to, cars or Shipments
+Shipments
+Enter the Name of the car
+Chevrolet
+Enter the Car ID of the car
+9
+Enter the Model the car
+Corvette
+Enter the Year of the car
+2014
+Input line: INSERT INTO Shipments VALUES FROM (9, "Chevrolet", "Corvette", 2014);
+ VALID SYNTAX
+Values have been added :)
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+5
+Enter the name of the table to show
+Shipments
+Input line: SHOW Shipments;
+
+     ------------------------------------------------------------
+     Shipments TABLE
+     ------------------------------------------------------------
+         Car_ID           Name          model           year
+     ------------------------------------------------------------
+              7           Audi             A8           2015
+              8         Nissan         Altima           2013
+              9      Chevrolet       Corvette           2014
+
+ VALID SYNTAX
+9
+Enter the name of the car you want to search
+Chevrolet
+Input line: SHOW (select (Name == "Chevrolet") cars);
+
+     ------------------------------------------------------------
+      TABLE
+     ------------------------------------------------------------
+         Car_ID           Name          model           year
+     ------------------------------------------------------------
+              2      Chevrolet         Cobalt           2013
+              3      Chevrolet         Impala           2014
+
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+8
+Input line: SHOW (Shipments - cars);
+
+     ------------------------------------------------------------
+      TABLE
+     ------------------------------------------------------------
+         Car_ID           Name          model           year
+     ------------------------------------------------------------
+              9      Chevrolet       Corvette           2014
+
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+6
+Input line: Customers_car_info <- project (Customer_ID, FirstName, LastName, Car_ID, Name, model, year) (select (Car_ID == B_Car_ID) (cars * Customers))
+Bad token
+Input line: SHOW Customers_car_info;
+
+     ---------------------------------------------------------------------------------------------------------
+     Customers_car_info TABLE
+     ---------------------------------------------------------------------------------------------------------
+    Customer_ID      FirstName       LastName         Car_ID           Name          model           year
+     ---------------------------------------------------------------------------------------------------------
+            111        Saurabh         Mishra              1           Audi             R8           2013
+            112        Bradley         Abbott              2      Chevrolet         Cobalt           2013
+            113        Michael         Karnes              3      Chevrolet         Impala           2014
+
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+7
+Input line: Unsold_Cars <- cars - (project (Car_ID, Name, model, year) (select (Car_ID == B_Car_ID) (cars * Customers)));
+ VALID SYNTAX
+Input line: SHOW Unsold_Cars;
+
+     ------------------------------------------------------------
+     Unsold_Cars TABLE
+     ------------------------------------------------------------
+         Car_ID           Name          model           year
+     ------------------------------------------------------------
+              4         Nissan         Altima           2011
+              5           Audi             A8           2014
+              7           Audi             A8           2015
+              8         Nissan         Altima           2013
+
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+9
+Enter the name of the car you want to search
+Audi
+Input line: SHOW (select (Name == "Audi") cars);
+
+     ------------------------------------------------------------
+      TABLE
+     ------------------------------------------------------------
+         Car_ID           Name          model           year
+     ------------------------------------------------------------
+              1           Audi             R8           2013
+              5           Audi             A8           2014
+              7           Audi             A8           2015
+
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+10
+
+Here are all the customers who bought cars from us :)
+Input line: SHOW (project(FirstName,LastName) Customers);
+
+     ------------------------------
+      TABLE
+     ------------------------------
+      FirstName       LastName
+     ------------------------------
+        Saurabh         Mishra
+        Bradley         Abbott
+        Michael         Karnes
+
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+11
+Input line: cars <- cars + Shipments;
+ VALID SYNTAX
+Input line: SHOW cars;
+
+     ------------------------------------------------------------
+     cars TABLE
+     ------------------------------------------------------------
+         Car_ID           Name          model           year
+     ------------------------------------------------------------
+              1           Audi             R8           2013
+              2      Chevrolet         Cobalt           2013
+              3      Chevrolet         Impala           2014
+              4         Nissan         Altima           2011
+              5           Audi             A8           2014
+              7           Audi             A8           2015
+              8         Nissan         Altima           2013
+              9      Chevrolet       Corvette           2014
+
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+12
+Enter the name of the table to be written back to the file
+cars
+Input line: WRITE cars;
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+13
+Enter the name of the table to be opened from the file
+cars
+Input line: OPEN cars;
+Input line: CREATE TABLE cars (Car_ID INTEGER, Name VARCHAR(1), model VARCHAR(1), year INTEGER) PRIMARY KEY (carid);
+Input line: INSERT INTO cars VALUES FROM (1, "Audi", "R8", 2013);
+Input line: INSERT INTO cars VALUES FROM (2, "Chevrolet", "Cobalt", 2013);
+Input line: INSERT INTO cars VALUES FROM (3, "Chevrolet", "Impala", 2014);
+Input line: INSERT INTO cars VALUES FROM (4, "Nissan", "Altima", 2011);
+Input line: INSERT INTO cars VALUES FROM (5, "Audi", "A8", 2014);
+Input line: INSERT INTO cars VALUES FROM (7, "Audi", "A8", 2015);
+Input line: INSERT INTO cars VALUES FROM (8, "Nissan", "Altima", 2013);
+Input line: INSERT INTO cars VALUES FROM (9, "Chevrolet", "Corvette", 2014);
+ VALID SYNTAX
+
+Please choose what you would like to do
+1. Add Cars the to the warehouse or Shipments
+2. Delete a Car from the warehouse
+3. Show Cars and their ID
+4. Update information about a Car in the warehouse
+5. Show table
+6. Show Customers and their car's information
+7. Show Unsold Cars
+8. Show the cars that are not in the warehouse but are in the shipment
+9. Search cars by name
+10. Show the names of all customers
+11. Add the shipment to the cars in the warehouse
+12. Write back to the file
+13. Open an existing table
+14. Exit
+14
+
+         Good Bye :)
+Input line: CLOSE;
+ VALID SYNTAX
+Input line: EXIT;
