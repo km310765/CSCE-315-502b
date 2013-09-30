@@ -1,0 +1,5 @@
+CREATE TABLE Unsold_Cars (Car_ID INTEGER, Name VARCHAR(1), model VARCHAR(1), year INTEGER) PRIMARY KEY (carid);
+INSERT INTO Unsold_Cars VALUES FROM (4, "Nissan", "Altima", 2011);
+INSERT INTO Unsold_Cars VALUES FROM (5, "Audi", "A8", 2014);
+INSERT INTO Unsold_Cars VALUES FROM (7, "Audi", "A8", 2015);
+INSERT INTO Unsold_Cars VALUES FROM (8, "Nissan", "Altima", 2013);
