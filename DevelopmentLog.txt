@@ -1,0 +1,4 @@
+Development Log: 
+1.	We met mostly after class and worked on the project. 
+2.	Our entire development log is on github. Each time we made a change; we made a new commit and notified everyone via text messaging. 
+3.	Most of our communication was done using text messages.
