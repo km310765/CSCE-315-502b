@@ -1,0 +1,12 @@
+Post Production Notes
+Changes to design
+•	We changed the relations to always return a string instead of returning an int or string based on its type.
+•	Database.cpp was changed to return pointers to a new relation instead of storing the data into an intermediate relation with a name like “Expression” or “AtomicExpression”.
+Difficulties
+•	The code was messy and full of random errors towards the end of the project.
+•	It was difficult to split up the work between the group members due to the dependency of each function.
+Solutions
+•	We redesigned the Database.h and Relation.h files to use pointers in order to save data.
+•	We mapped out a list of functions before we worked on them.
+Lessons Learned
+•	We should plan out the structure of the project before we start coding each part
