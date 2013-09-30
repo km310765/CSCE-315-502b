@@ -1,0 +1,4 @@
+CREATE TABLE Shipments (Car_ID INTEGER, Name VARCHAR(1), model VARCHAR(1), year INTEGER) PRIMARY KEY (Car_ID);
+INSERT INTO Shipments VALUES FROM (7, "Audi", "A8", 2015);
+INSERT INTO Shipments VALUES FROM (8, "Nissan", "Altima", 2013);
+INSERT INTO Shipments VALUES FROM (9, "Chevrolet", "Corvette", 2014);
