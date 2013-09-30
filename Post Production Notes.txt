@@ -1,4 +1,5 @@
 Post Production Notes
+
 Changes to design
 •	We changed the relations to always return a string instead of returning an int or string based on its type.
 •	Database.cpp was changed to return pointers to a new relation instead of storing the data into an intermediate relation with a name like “Expression” or “AtomicExpression”.
