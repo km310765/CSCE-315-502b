@@ -1,0 +1,9 @@
+CREATE TABLE cars (Car_ID INTEGER, Name VARCHAR(1), model VARCHAR(1), year INTEGER) PRIMARY KEY (carid);
+INSERT INTO cars VALUES FROM (1, "Audi", "R8", 2013);
+INSERT INTO cars VALUES FROM (2, "Chevrolet", "Cobalt", 2013);
+INSERT INTO cars VALUES FROM (3, "Chevrolet", "Impala", 2014);
+INSERT INTO cars VALUES FROM (4, "Nissan", "Altima", 2011);
+INSERT INTO cars VALUES FROM (5, "Audi", "A8", 2014);
+INSERT INTO cars VALUES FROM (7, "Audi", "A8", 2015);
+INSERT INTO cars VALUES FROM (8, "Nissan", "Altima", 2013);
+INSERT INTO cars VALUES FROM (9, "Chevrolet", "Corvette", 2014);
